@@ -24,13 +24,11 @@ export function DataLoader() {
 
     const worker = createDataLoaderWorker();
     workerRef.current = worker;
-    console.log('[Main] Worker created:', worker);
 
     dispatch(loadingStarted());
 
     worker.onmessage = (e: MessageEvent<WorkerMessage>) => {
       const msg = e.data;
-      console.log('[Main] Message from worker:', msg.type);
 
       switch (msg.type) {
         case 'BATCH':
@@ -53,13 +51,11 @@ export function DataLoader() {
     };
 
     worker.onerror = (e) => {
-      console.error('[Main] Worker error:', e);
       dispatch(loadingFailed(e.message ?? 'Worker failed'));
       worker.terminate();
       workerRef.current = null;
     };
 
-    console.log('[Main] Posting message to worker...');
     worker.postMessage({ url: '/ui_demo.json' });
 
   }, [dispatch]);
