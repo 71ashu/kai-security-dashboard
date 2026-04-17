@@ -8,6 +8,7 @@ import { FilterBar } from '../FilterBar';
 import { VulnerabilityTable } from '../VulnerabilityTable';
 import { DetailDrawer } from '../DetailDrawer';
 import { ComparisonView } from '../ComparisonView';
+import { PreferencesMenu } from '../PreferencesMenu';
 import { useAppSelector } from '../../store/hooks';
 import { selectFilteredVulnerabilities } from '../../store/selectors';
 import { downloadVulnerabilitiesCsv } from '../../utils/export';
@@ -44,6 +45,7 @@ export function DashboardPage() {
           <span className="text-gray-400 text-sm">Vulnerability Dashboard</span>
         </div>
         <div className="flex items-center gap-2">
+          <PreferencesMenu />
           <button
             type="button"
             onClick={handleExportCsv}

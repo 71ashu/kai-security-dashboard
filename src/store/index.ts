@@ -1,10 +1,29 @@
 // src/store/index.ts
 import { configureStore } from '@reduxjs/toolkit';
-import vulnerabilitiesReducer from './vulnerabilitiesSlice';
+import vulnerabilitiesReducer, { vulnerabilitiesInitialState } from './vulnerabilitiesSlice';
+import preferencesReducer, {
+  loadPersistedPreferences,
+  createPreferencesPersistMiddleware,
+  createSortSyncMiddleware,
+} from './preferencesSlice';
+
+const persistedPreferences = loadPersistedPreferences();
 
 export const store = configureStore({
   reducer: {
     vulnerabilities: vulnerabilitiesReducer,
+    preferences: preferencesReducer,
+  },
+  preloadedState: {
+    preferences: persistedPreferences,
+    vulnerabilities: {
+      ...vulnerabilitiesInitialState,
+      filters: {
+        ...vulnerabilitiesInitialState.filters,
+        sortField: persistedPreferences.defaultSortField,
+        sortDirection: persistedPreferences.defaultSortDirection,
+      },
+    },
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -12,7 +31,9 @@ export const store = configureStore({
       // this check extremely slow on every dispatch
       serializableCheck: false,
       immutabilityCheck: false,
-    }),
+    })
+      .concat(createSortSyncMiddleware())
+      .concat(createPreferencesPersistMiddleware()),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

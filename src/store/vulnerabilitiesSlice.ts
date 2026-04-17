@@ -20,7 +20,7 @@ const initialFilterState: FilterState = {
   sortDirection: 'desc',
 };
 
-const initialState: VulnerabilitiesState = {
+export const vulnerabilitiesInitialState: VulnerabilitiesState = {
   data: [],
   totalLoaded: 0,
   isLoading: false,
@@ -31,7 +31,7 @@ const initialState: VulnerabilitiesState = {
 
 const vulnerabilitiesSlice = createSlice({
   name: 'vulnerabilities',
-  initialState,
+  initialState: vulnerabilitiesInitialState,
   reducers: {
     loadingStarted(state) {
       state.isLoading = true;
