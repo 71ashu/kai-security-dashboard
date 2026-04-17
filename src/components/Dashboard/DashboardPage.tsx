@@ -1,5 +1,6 @@
 // src/components/Dashboard/DashboardPage.tsx
 import { useCallback, useState } from 'react';
+import { ErrorBoundary } from '../ErrorBoundary';
 import { MetricsSummary } from './MetricsSummary';
 import { SeverityChart } from '../Charts/SeverityChart';
 import { RiskFactorChart } from '../Charts/RiskFactorChart';
@@ -20,6 +21,10 @@ export function DashboardPage() {
   const [compareModalOpen, setCompareModalOpen] = useState(false);
 
   const filteredVulnerabilities = useAppSelector(selectFilteredVulnerabilities);
+
+  const onSelectVuln = useCallback((v: Vulnerability) => {
+    setSelectedVuln(v);
+  }, []);
 
   const addToCompare = useCallback((v: Vulnerability) => {
     setComparisonList((prev) => {
@@ -68,21 +73,23 @@ export function DashboardPage() {
       </header>
 
       {/* Main content */}
-      <main className="px-8 py-6 space-y-6 max-w-screen-2xl mx-auto">
+      <ErrorBoundary>
+        <main className="px-8 py-6 space-y-6 max-w-screen-2xl mx-auto">
 
-        <MetricsSummary />
+          <MetricsSummary />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <SeverityChart />
-          <RiskFactorChart />
-          <TrendChart />
-        </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <SeverityChart />
+            <RiskFactorChart />
+            <TrendChart />
+          </div>
 
-        <FilterBar />
+          <FilterBar />
 
-        <VulnerabilityTable onSelectVuln={setSelectedVuln} />
+          <VulnerabilityTable onSelectVuln={onSelectVuln} />
 
-      </main>
+        </main>
+      </ErrorBoundary>
 
       {selectedVuln && (
         <DetailDrawer

@@ -3,7 +3,13 @@ import { createSelector } from '@reduxjs/toolkit';
 import type { RootState } from './index.ts';
 
 const selectAllVulnerabilities = (state: RootState) => state.vulnerabilities.data;
-const selectFilters = (state: RootState) => state.vulnerabilities.filters;
+
+/** Field-level inputs so a new `filters` object (Immer) does not rerun unrelated steps. */
+const selectFilterMode = (state: RootState) => state.vulnerabilities.filters.filterMode;
+const selectSeverityFilter = (state: RootState) => state.vulnerabilities.filters.severityFilter;
+const selectSearchQuery = (state: RootState) => state.vulnerabilities.filters.searchQuery;
+const selectSortField = (state: RootState) => state.vulnerabilities.filters.sortField;
+const selectSortDirection = (state: RootState) => state.vulnerabilities.filters.sortDirection;
 
 // Which CVEs kaiStatus filtering removes
 const KAI_STATUS_MAP = {
@@ -14,15 +20,15 @@ const KAI_STATUS_MAP = {
 // Step 1: apply kaiStatus filter mode
 const selectFilterModeFiltered = createSelector(
   selectAllVulnerabilities,
-  selectFilters,
-  (data, filters) => {
-    if (filters.filterMode === 'none') return data;
+  selectFilterMode,
+  (data, filterMode) => {
+    if (filterMode === 'none') return data;
 
     const excluded = new Set<string>();
-    if (filters.filterMode === 'analysis' || filters.filterMode === 'both') {
+    if (filterMode === 'analysis' || filterMode === 'both') {
       excluded.add(KAI_STATUS_MAP['analysis']);
     }
-    if (filters.filterMode === 'ai-analysis' || filters.filterMode === 'both') {
+    if (filterMode === 'ai-analysis' || filterMode === 'both') {
       excluded.add(KAI_STATUS_MAP['ai-analysis']);
     }
 
@@ -35,10 +41,10 @@ const selectFilterModeFiltered = createSelector(
 // Step 2: apply severity filter
 const selectSeverityFiltered = createSelector(
   selectFilterModeFiltered,
-  selectFilters,
-  (data, filters) => {
-    if (filters.severityFilter.length === 0) return data;
-    const allowed = new Set(filters.severityFilter);
+  selectSeverityFilter,
+  (data, severityFilter) => {
+    if (severityFilter.length === 0) return data;
+    const allowed = new Set(severityFilter);
     return data.filter((v) => allowed.has(v.severity));
   }
 );
@@ -46,9 +52,9 @@ const selectSeverityFiltered = createSelector(
 // Step 3: apply search query
 const selectSearchFiltered = createSelector(
   selectSeverityFiltered,
-  selectFilters,
-  (data, filters) => {
-    const query = filters.searchQuery.trim().toLowerCase();
+  selectSearchQuery,
+  (data, searchQuery) => {
+    const query = searchQuery.trim().toLowerCase();
     if (!query) return data;
     return data.filter(
       (v) =>
@@ -64,9 +70,9 @@ const selectSearchFiltered = createSelector(
 // Step 4: apply sort
 export const selectFilteredVulnerabilities = createSelector(
   selectSearchFiltered,
-  selectFilters,
-  (data, filters) => {
-    const { sortField, sortDirection } = filters;
+  selectSortField,
+  selectSortDirection,
+  (data, sortField, sortDirection) => {
     return [...data].sort((a, b) => {
       const aVal = a[sortField] ?? '';
       const bVal = b[sortField] ?? '';

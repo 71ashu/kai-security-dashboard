@@ -3,8 +3,6 @@ import type { RawGroup, RawImage, RawVulnerability, Vulnerability, WorkerMessage
 
 const BATCH_SIZE = 500;
 
-console.log('[Worker] Script loaded');
-
 function transformVulnerability(
   raw: RawVulnerability,
   groupName: string,
@@ -23,13 +21,10 @@ function transformVulnerability(
 }
 
 self.onmessage = async (e: MessageEvent<{ url: string }>) => {
-  console.log('[Worker] Got message', e.data);
   const { url } = e.data;
 
   try {
-    console.log('[Worker] Starting fetch:', url);
     const response = await fetch(url);
-    console.log('[Worker] Response status:', response.status);
 
     if (!response.ok) {
       const msg: WorkerMessage = { type: 'ERROR', message: `HTTP ${response.status}` };
@@ -37,11 +32,8 @@ self.onmessage = async (e: MessageEvent<{ url: string }>) => {
       return;
     }
 
-    console.log('[Worker] Reading text...');
     const text = await response.text();
-    console.log('[Worker] Parsing JSON...');
     const data = JSON.parse(text) as { groups: Record<string, RawGroup> };
-    console.log('[Worker] JSON parsed, processing...');
 
     let batch: Vulnerability[] = [];
     let totalLoaded = 0;
@@ -81,7 +73,6 @@ self.onmessage = async (e: MessageEvent<{ url: string }>) => {
 
     const doneMsg: WorkerMessage = { type: 'DONE', total: totalLoaded };
     self.postMessage(doneMsg);
-    console.log('[Worker] Done. Total:', totalLoaded);
 
   } catch (err) {
     console.error('[Worker] Error:', err);
