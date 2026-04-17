@@ -50,7 +50,7 @@ import {
                 borderRadius: '8px',
                 color: '#f9fafb',
               }}
-              formatter={(value: number) => [value.toLocaleString(), 'CVEs']}
+              formatter={(value) => [Number(value ?? 0).toLocaleString(), 'CVEs']}
             />
             <Area
               type="monotone"

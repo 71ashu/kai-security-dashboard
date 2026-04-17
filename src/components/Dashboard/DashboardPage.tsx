@@ -1,15 +1,35 @@
 // src/components/Dashboard/DashboardPage.tsx
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { MetricsSummary } from './MetricsSummary';
 import { SeverityChart } from '../Charts/SeverityChart';
 import { RiskFactorChart } from '../Charts/RiskFactorChart';
 import { TrendChart } from '../Charts/TrendChart';
 import { FilterBar } from '../FilterBar';
 import { VulnerabilityTable } from '../VulnerabilityTable';
+import { DetailDrawer } from '../DetailDrawer';
+import { ComparisonView } from '../ComparisonView';
+import { useAppSelector } from '../../store/hooks';
+import { selectFilteredVulnerabilities } from '../../store/selectors';
+import { downloadVulnerabilitiesCsv } from '../../utils/export';
 import type { Vulnerability } from '../../types/vulnerability';
 
 export function DashboardPage() {
   const [selectedVuln, setSelectedVuln] = useState<Vulnerability | null>(null);
+  const [comparisonList, setComparisonList] = useState<Vulnerability[]>([]);
+  const [compareModalOpen, setCompareModalOpen] = useState(false);
+
+  const filteredVulnerabilities = useAppSelector(selectFilteredVulnerabilities);
+
+  const addToCompare = useCallback((v: Vulnerability) => {
+    setComparisonList((prev) => {
+      if (prev.some((x) => x.id === v.id)) return prev;
+      return [...prev, v];
+    });
+  }, []);
+
+  const handleExportCsv = useCallback(() => {
+    downloadVulnerabilitiesCsv(filteredVulnerabilities);
+  }, [filteredVulnerabilities]);
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
@@ -22,6 +42,26 @@ export function DashboardPage() {
           </span>
           <span className="text-gray-600 text-sm">|</span>
           <span className="text-gray-400 text-sm">Vulnerability Dashboard</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleExportCsv}
+            className="px-3 py-1.5 rounded-lg text-sm font-medium border border-gray-700
+                       bg-gray-800/80 text-gray-200 hover:bg-gray-800 transition-colors"
+          >
+            Export CSV
+          </button>
+          {comparisonList.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setCompareModalOpen(true)}
+              className="px-3 py-1.5 rounded-lg text-sm font-medium border border-amber-500/40
+                         bg-amber-500/10 text-amber-200 hover:bg-amber-500/20 transition-colors"
+            >
+              Compare ({comparisonList.length})
+            </button>
+          )}
         </div>
       </header>
 
@@ -42,23 +82,20 @@ export function DashboardPage() {
 
       </main>
 
-      {/* Detail drawer -- step 8 will flesh this out */}
       {selectedVuln && (
-        <div className="fixed inset-y-0 right-0 w-[480px] bg-gray-900 border-l border-gray-800
-                        shadow-2xl z-20 overflow-y-auto p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <span className="font-mono text-blue-400 font-semibold">{selectedVuln.cve}</span>
-            <button
-              onClick={() => setSelectedVuln(null)}
-              className="text-gray-500 hover:text-white transition-colors"
-            >
-              ✕
-            </button>
-          </div>
-          <div className="text-sm text-gray-400 leading-relaxed">{selectedVuln.description}</div>
-          <div className="text-xs text-gray-600">Full detail view coming in step 8</div>
-        </div>
+        <DetailDrawer
+          vuln={selectedVuln}
+          onClose={() => setSelectedVuln(null)}
+          onAddToCompare={() => addToCompare(selectedVuln)}
+          isInCompareList={comparisonList.some((v) => v.id === selectedVuln.id)}
+        />
       )}
+
+      <ComparisonView
+        open={compareModalOpen}
+        items={comparisonList}
+        onClose={() => setCompareModalOpen(false)}
+      />
 
     </div>
   );

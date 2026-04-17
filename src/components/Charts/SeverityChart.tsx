@@ -47,9 +47,9 @@ import {
                 borderRadius: '8px',
                 color: '#f9fafb',
               }}
-              formatter={(value: number, name: string) => [
-                value.toLocaleString(),
-                name.charAt(0).toUpperCase() + name.slice(1),
+              formatter={(value, name) => [
+                Number(value ?? 0).toLocaleString(),
+                String(name ?? '').charAt(0).toUpperCase() + String(name ?? '').slice(1),
               ]}
             />
             <Legend

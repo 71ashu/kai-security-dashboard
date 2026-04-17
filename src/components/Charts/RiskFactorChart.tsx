@@ -45,7 +45,7 @@ import {
                 }}
                 labelStyle={{ color: '#f9fafb', fontWeight: 600, marginBottom: 4 }}
                 itemStyle={{ color: '#f9fafb' }}
-                formatter={(value: number) => [value.toLocaleString(), 'CVEs']}
+                formatter={(value) => [Number(value ?? 0).toLocaleString(), 'CVEs']}
             />
             <Bar dataKey="value" radius={[0, 4, 4, 0]}>
               {data.map((_, i) => (

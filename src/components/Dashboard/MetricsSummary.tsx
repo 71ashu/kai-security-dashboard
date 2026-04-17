@@ -29,7 +29,7 @@ function MetricCard({ label, value, sub, accent }: MetricCardProps) {
 
 export function MetricsSummary() {
   const filteredCount = useAppSelector(selectFilteredCount);
-  const { analysisCount, aiAnalysisCount, bothCount } = useAppSelector(selectFilterImpact);
+  const { analysisCount, aiAnalysisCount } = useAppSelector(selectFilterImpact);
   const removedCount = TOTAL - filteredCount;
 
   return (
