@@ -1,6 +1,58 @@
 // src/store/selectors.ts
 import { createSelector } from '@reduxjs/toolkit';
 import type { RootState } from './index.ts';
+import type { Vulnerability } from '../types/vulnerability';
+
+const SEVERITY_ORDER: Record<string, number> = {
+  critical: 0,
+  high: 1,
+  medium: 2,
+  low: 3,
+  unknown: 4,
+};
+
+function compareVulnRows(
+  a: Vulnerability,
+  b: Vulnerability,
+  sortField: keyof Vulnerability,
+  sortDirection: 'asc' | 'desc'
+): number {
+  let cmp = 0;
+  switch (sortField) {
+    case 'cvss':
+      cmp = (a.cvss ?? 0) - (b.cvss ?? 0);
+      break;
+    case 'severity':
+      cmp =
+        (SEVERITY_ORDER[a.severity ?? 'unknown'] ?? 99) -
+        (SEVERITY_ORDER[b.severity ?? 'unknown'] ?? 99);
+      break;
+    case 'published':
+      cmp = (a.published ?? '').localeCompare(b.published ?? '');
+      break;
+    default: {
+      const aVal = a[sortField];
+      const bVal = b[sortField];
+      if (typeof aVal === 'number' && typeof bVal === 'number') {
+        cmp = aVal - bVal;
+      } else {
+        cmp = String(aVal ?? '').localeCompare(String(bVal ?? ''));
+      }
+    }
+  }
+  return sortDirection === 'asc' ? cmp : -cmp;
+}
+
+/** Shared by the sorted selector and CSV export. */
+export function sortVulnerabilities(
+  data: readonly Vulnerability[],
+  sortField: keyof Vulnerability,
+  sortDirection: 'asc' | 'desc'
+): Vulnerability[] {
+  const out = data.slice();
+  out.sort((a, b) => compareVulnRows(a, b, sortField, sortDirection));
+  return out;
+}
 
 const selectAllVulnerabilities = (state: RootState) => state.vulnerabilities.data;
 
@@ -67,19 +119,16 @@ const selectSearchFiltered = createSelector(
   }
 );
 
-// Step 4: apply sort
+/** Filtered rows in ingestion order (no sort). Use for counts and aggregations. */
+export const selectFilteredList = selectSearchFiltered;
+
+// Sorted list for the table only — charts use `selectFilteredList` via shared aggregations.
 export const selectFilteredVulnerabilities = createSelector(
-  selectSearchFiltered,
+  selectFilteredList,
   selectSortField,
   selectSortDirection,
-  (data, sortField, sortDirection) => {
-    return [...data].sort((a, b) => {
-      const aVal = a[sortField] ?? '';
-      const bVal = b[sortField] ?? '';
-      const cmp = String(aVal).localeCompare(String(bVal));
-      return sortDirection === 'asc' ? cmp : -cmp;
-    });
-  }
+  (data, sortField, sortDirection) =>
+    sortVulnerabilities(data, sortField, sortDirection)
 );
 
 // Filter impact counts -- drives the visual on the Analysis buttons
@@ -99,61 +148,66 @@ export const selectFilterImpact = createSelector(
   }
 );
 
-// Severity distribution for the pie/bar chart
+// One pass over filtered rows for all three charts (avoids triple iteration + sort).
+const selectChartAggregations = createSelector(selectFilteredList, (data) => {
+  const severityCounts: Record<string, number> = {
+    critical: 0,
+    high: 0,
+    medium: 0,
+    low: 0,
+    unknown: 0,
+  };
+  const riskCounts: Record<string, number> = {};
+  const monthCounts: Record<string, number> = {};
+
+  for (const v of data) {
+    const key = v.severity ?? 'unknown';
+    severityCounts[key] = (severityCounts[key] ?? 0) + 1;
+
+    for (const rf of v.riskFactorList) {
+      riskCounts[rf] = (riskCounts[rf] ?? 0) + 1;
+    }
+
+    const month = v.published?.slice(0, 7);
+    if (month && month !== '0001-01') {
+      monthCounts[month] = (monthCounts[month] ?? 0) + 1;
+    }
+  }
+
+  const severityDistribution = Object.entries(severityCounts).map(([name, value]) => ({
+    name,
+    value,
+  }));
+
+  const riskFactorFrequency = Object.entries(riskCounts)
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 8);
+
+  const monthlyTrend = Object.entries(monthCounts)
+    .map(([month, count]) => ({ month, count }))
+    .sort((a, b) => a.month.localeCompare(b.month));
+
+  return { severityDistribution, riskFactorFrequency, monthlyTrend };
+});
+
 export const selectSeverityDistribution = createSelector(
-  selectFilteredVulnerabilities,
-  (data) => {
-    const counts: Record<string, number> = {
-      critical: 0,
-      high: 0,
-      medium: 0,
-      low: 0,
-      unknown: 0,
-    };
-    for (const v of data) {
-      const key = v.severity ?? 'unknown';
-      counts[key] = (counts[key] ?? 0) + 1;
-    }
-    return Object.entries(counts).map(([name, value]) => ({ name, value }));
-  }
+  selectChartAggregations,
+  (agg) => agg.severityDistribution
 );
 
-// Risk factor frequency for the bar chart
 export const selectRiskFactorFrequency = createSelector(
-  selectFilteredVulnerabilities,
-  (data) => {
-    const counts: Record<string, number> = {};
-    for (const v of data) {
-      for (const rf of v.riskFactorList) {
-        counts[rf] = (counts[rf] ?? 0) + 1;
-      }
-    }
-    return Object.entries(counts)
-      .map(([name, value]) => ({ name, value }))
-      .sort((a, b) => b.value - a.value)
-      .slice(0, 8);
-  }
+  selectChartAggregations,
+  (agg) => agg.riskFactorFrequency
 );
 
-// Monthly trend for the line chart
 export const selectMonthlyTrend = createSelector(
-  selectFilteredVulnerabilities,
-  (data) => {
-    const counts: Record<string, number> = {};
-    for (const v of data) {
-      const month = v.published?.slice(0, 7);
-      if (month && month !== '0001-01') {
-        counts[month] = (counts[month] ?? 0) + 1;
-      }
-    }
-    return Object.entries(counts)
-      .map(([month, count]) => ({ month, count }))
-      .sort((a, b) => a.month.localeCompare(b.month));
-  }
+  selectChartAggregations,
+  (agg) => agg.monthlyTrend
 );
 
 // Total count after all filters -- for the metrics summary
 export const selectFilteredCount = createSelector(
-  selectFilteredVulnerabilities,
+  selectFilteredList,
   (data) => data.length
 );

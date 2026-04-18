@@ -11,7 +11,7 @@ import { DetailDrawer } from '../DetailDrawer';
 import { ComparisonView } from '../ComparisonView';
 import { PreferencesMenu } from '../PreferencesMenu';
 import { useAppSelector } from '../../store/hooks';
-import { selectFilteredVulnerabilities } from '../../store/selectors';
+import { selectFilteredList, sortVulnerabilities } from '../../store/selectors';
 import { downloadVulnerabilitiesCsv } from '../../utils/export';
 import type { Vulnerability } from '../../types/vulnerability';
 
@@ -20,7 +20,9 @@ export function DashboardPage() {
   const [comparisonList, setComparisonList] = useState<Vulnerability[]>([]);
   const [compareModalOpen, setCompareModalOpen] = useState(false);
 
-  const filteredVulnerabilities = useAppSelector(selectFilteredVulnerabilities);
+  const filteredList = useAppSelector(selectFilteredList);
+  const sortField = useAppSelector((s) => s.vulnerabilities.filters.sortField);
+  const sortDirection = useAppSelector((s) => s.vulnerabilities.filters.sortDirection);
 
   const onSelectVuln = useCallback((v: Vulnerability) => {
     setSelectedVuln(v);
@@ -34,8 +36,10 @@ export function DashboardPage() {
   }, []);
 
   const handleExportCsv = useCallback(() => {
-    downloadVulnerabilitiesCsv(filteredVulnerabilities);
-  }, [filteredVulnerabilities]);
+    downloadVulnerabilitiesCsv(
+      sortVulnerabilities(filteredList, sortField, sortDirection)
+    );
+  }, [filteredList, sortField, sortDirection]);
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
