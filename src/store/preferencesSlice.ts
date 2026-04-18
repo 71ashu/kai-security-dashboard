@@ -12,7 +12,7 @@ export const TABLE_COLUMNS_META = [
   { key: 'cve' as const, label: 'CVE ID', width: 176, sortable: true },
   { key: 'severity' as const, label: 'Severity', width: 112, sortable: true },
   { key: 'cvss' as const, label: 'CVSS', width: 80, sortable: true },
-  { key: 'packageName' as const, label: 'Package', width: 192, sortable: true },
+  { key: 'packageName' as const, label: 'Package', width: 320, sortable: true },
   { key: 'groupName' as const, label: 'Group', width: 176, sortable: true },
   { key: 'published' as const, label: 'Published', width: 128, sortable: true },
   { key: 'kaiStatus' as const, label: 'KAI Status', width: 160, sortable: false },

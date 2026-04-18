@@ -11,18 +11,21 @@ interface Props {
 export function DetailDrawer({ vuln, onClose, onAddToCompare, isInCompareList }: Props) {
   return (
     <div
-      className="fixed inset-y-0 right-0 w-[480px] bg-gray-900 border-l border-gray-800
+      className="fixed inset-y-0 right-0 w-full max-w-[600px] bg-gray-900 border-l border-gray-800
                  shadow-2xl z-20 overflow-y-auto flex flex-col"
       role="dialog"
       aria-labelledby="drawer-cve-title"
     >
-      <div className="p-6 space-y-4 flex-1">
+      <div className="p-6 space-y-4 flex-1 min-w-0">
         <div className="flex items-start justify-between gap-3">
-          <div>
-            <h2 id="drawer-cve-title" className="font-mono text-blue-400 font-semibold text-lg">
+          <div className="min-w-0 flex-1 pr-2">
+            <h2
+              id="drawer-cve-title"
+              className="font-mono text-blue-400 font-semibold text-lg break-words"
+            >
               {vuln.cve}
             </h2>
-            <p className="text-xs text-gray-500 mt-1 font-mono truncate" title={vuln.id}>
+            <p className="text-xs text-gray-500 mt-1 font-mono break-all" title={vuln.id}>
               {vuln.id}
             </p>
           </div>
@@ -68,14 +71,18 @@ export function DetailDrawer({ vuln, onClose, onAddToCompare, isInCompareList }:
           />
         </div>
 
-        <div>
+        <div className="min-w-0">
           <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Fix status</div>
-          <div className="text-sm text-gray-300">{vuln.status || '—'}</div>
+          <div className="text-sm text-gray-300 break-words whitespace-pre-wrap">
+            {vuln.status || '—'}
+          </div>
         </div>
 
-        <div>
+        <div className="min-w-0">
           <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Description</div>
-          <div className="text-sm text-gray-400 leading-relaxed">{vuln.description}</div>
+          <div className="text-sm text-gray-400 leading-relaxed break-words whitespace-pre-wrap">
+            {vuln.description}
+          </div>
         </div>
       </div>
     </div>
@@ -84,9 +91,9 @@ export function DetailDrawer({ vuln, onClose, onAddToCompare, isInCompareList }:
 
 function DetailField({ label, value }: { label: string; value: string }) {
   return (
-    <div>
+    <div className="min-w-0">
       <div className="text-xs text-gray-500 uppercase tracking-wider mb-0.5">{label}</div>
-      <div className="text-gray-300 truncate" title={value}>
+      <div className="text-gray-300 break-words" title={value}>
         {value}
       </div>
     </div>

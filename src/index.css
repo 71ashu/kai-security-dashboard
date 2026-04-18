@@ -52,12 +52,13 @@
   }
 }
 
+/* Override :root background (--bg is light in default theme) so gutters match the dashboard */
+html:root,
+body {
+  background-color: rgb(3 7 18); /* gray-950 — matches DashboardPage */
+}
+
 #root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
   min-height: 100svh;
   display: flex;
   flex-direction: column;
@@ -72,7 +73,6 @@ h1,
 h2 {
   font-family: var(--heading);
   font-weight: 500;
-  color: var(--text-h);
 }
 
 h1 {

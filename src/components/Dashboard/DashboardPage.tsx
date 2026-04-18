@@ -41,7 +41,7 @@ export function DashboardPage() {
     <div className="min-h-screen bg-gray-950 text-white">
 
       {/* Header */}
-      <header className="border-b border-gray-800 px-8 py-4 flex items-center justify-between sticky top-0 bg-gray-950 z-10">
+      <header className="max-w-screen-2xl mx-auto w-full border-b border-gray-800 px-8 py-4 flex items-center justify-between sticky top-0 bg-gray-950 z-10">
         <div className="flex items-center gap-3">
           <span className="text-xl font-bold tracking-tight">
             KAI <span className="text-red-500">Security</span>
