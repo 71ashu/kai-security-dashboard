@@ -2,9 +2,7 @@
 import { useCallback, useState } from 'react';
 import { ErrorBoundary } from '../ErrorBoundary';
 import { MetricsSummary } from './MetricsSummary';
-import { SeverityChart } from '../Charts/SeverityChart';
-import { RiskFactorChart } from '../Charts/RiskFactorChart';
-import { TrendChart } from '../Charts/TrendChart';
+import { RiskFactorChart, SeverityChart, TrendChart } from '../Charts';
 import { FilterBar } from '../FilterBar';
 import { VulnerabilityTable } from '../VulnerabilityTable';
 import { DetailDrawer } from '../DetailDrawer';
