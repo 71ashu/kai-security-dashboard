@@ -8,6 +8,7 @@ import {
   loadingCompleted,
   loadingFailed,
 } from '../../store/vulnerabilitiesSlice';
+import { DATA_URL } from '../../config';
 import { createDataLoaderWorker } from '../../workers';
 import type { WorkerMessage } from '../../types/vulnerability';
 
@@ -57,7 +58,7 @@ export function DataLoader() {
       workerRef.current = null;
     };
 
-    worker.postMessage({ url: '/ui_demo.json' });
+    worker.postMessage({ url: DATA_URL });
 
   }, [dispatch]);
 

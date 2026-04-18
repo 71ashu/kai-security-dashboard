@@ -1,0 +1,1 @@
+export const DATA_URL = 'https://media.githubusercontent.com/media/chanduusc/Ui-Demo-Data/main/ui_demo.json';
