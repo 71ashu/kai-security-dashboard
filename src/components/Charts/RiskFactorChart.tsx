@@ -1,15 +1,33 @@
 // src/components/Charts/RiskFactorChart.tsx
+import { useState } from 'react';
 import {
-    BarChart, Bar, XAxis, YAxis, Tooltip,
-    ResponsiveContainer, Cell
-  } from 'recharts';
-  import { useAppSelector } from '../../store/hooks';
-  import { selectRiskFactorFrequency } from '../../store/selectors';
-  
-  export function RiskFactorChart() {
-    const data = useAppSelector(selectRiskFactorFrequency);
-  
-    return (
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+} from 'recharts';
+import { useAppSelector } from '../../store/hooks';
+import { selectRiskFactorFrequency } from '../../store/selectors';
+
+/** Base / hover (darker) fills by bar rank */
+function barFills(index: number, isHovered: boolean): string {
+  if (index === 0) {
+    return isHovered ? '#b91c1c' : '#ef4444';
+  }
+  if (index < 3) {
+    return isHovered ? '#c2410c' : '#f97316';
+  }
+  return isHovered ? '#1d4ed8' : '#3b82f6';
+}
+
+export function RiskFactorChart() {
+  const data = useAppSelector(selectRiskFactorFrequency);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+  return (
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 flex flex-col gap-3">
         <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-widest">
           Top Risk Factors
@@ -36,22 +54,28 @@ import {
               axisLine={false}
             />
             <Tooltip
+                cursor={false}
                 contentStyle={{
-                    backgroundColor: '#1f2937',
-                    border: '1px solid #4b5563',
-                    borderRadius: '8px',
-                    color: '#f9fafb',
-                    fontSize: '13px',
+                  backgroundColor: '#1f2937',
+                  border: '1px solid #4b5563',
+                  borderRadius: '8px',
+                  color: '#f9fafb',
+                  fontSize: '13px',
                 }}
                 labelStyle={{ color: '#f9fafb', fontWeight: 600, marginBottom: 4 }}
                 itemStyle={{ color: '#f9fafb' }}
                 formatter={(value) => [Number(value ?? 0).toLocaleString(), 'CVEs']}
             />
-            <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+            <Bar
+              dataKey="value"
+              radius={[0, 4, 4, 0]}
+              onMouseEnter={(_entry, index) => setHoveredIndex(index)}
+              onMouseLeave={() => setHoveredIndex(null)}
+            >
               {data.map((_, i) => (
                 <Cell
                   key={i}
-                  fill={i === 0 ? '#ef4444' : i < 3 ? '#f97316' : '#3b82f6'}
+                  fill={barFills(i, hoveredIndex === i)}
                 />
               ))}
             </Bar>

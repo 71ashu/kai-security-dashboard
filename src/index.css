@@ -24,3 +24,11 @@ button {
 button:disabled {
   cursor: not-allowed;
 }
+
+/* Recharts: suppress browser focus outline on chart SVG / layers / surfaces */
+.recharts-responsive-container:focus,
+.recharts-responsive-container:focus-visible,
+.recharts-wrapper *:focus,
+.recharts-wrapper *:focus-visible {
+  outline: none;
+}
