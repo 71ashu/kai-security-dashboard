@@ -2,6 +2,8 @@
 import { Routes, Route } from 'react-router-dom';
 import { DataLoader } from './components/DataLoader';
 import { DashboardPage } from './components/Dashboard/DashboardPage';
+import { VulnerabilityDetailPage } from './components/VulnerabilityDetail';
+import { ComparisonPage } from './components/ComparisonView';
 import { useAppSelector } from './store/hooks';
 
 function App() {
@@ -33,6 +35,8 @@ function App() {
       {!isLoading && !error && totalLoaded > 0 && (
         <Routes>
           <Route path="/" element={<DashboardPage />} />
+          <Route path="/vulnerability/:id" element={<VulnerabilityDetailPage />} />
+          <Route path="/compare" element={<ComparisonPage />} />
         </Routes>
       )}
     </>

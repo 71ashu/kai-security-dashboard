@@ -1,37 +1,21 @@
 // src/components/Dashboard/DashboardPage.tsx
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { ErrorBoundary } from '../ErrorBoundary';
 import { MetricsSummary } from './MetricsSummary';
 import { RiskFactorChart, SeverityChart, TrendChart } from '../Charts';
 import { FilterBar } from '../FilterBar';
 import { VulnerabilityTable } from '../VulnerabilityTable';
-import { DetailDrawer } from '../DetailDrawer';
-import { ComparisonView } from '../ComparisonView';
 import { PreferencesMenu } from '../PreferencesMenu';
 import { useAppSelector } from '../../store/hooks';
 import { selectFilteredList, sortVulnerabilities } from '../../store/selectors';
 import { downloadVulnerabilitiesCsv } from '../../utils/export';
-import type { Vulnerability } from '../../types/vulnerability';
 
 export function DashboardPage() {
-  const [selectedVuln, setSelectedVuln] = useState<Vulnerability | null>(null);
-  const [comparisonList, setComparisonList] = useState<Vulnerability[]>([]);
-  const [compareModalOpen, setCompareModalOpen] = useState(false);
-
   const filteredList = useAppSelector(selectFilteredList);
   const sortField = useAppSelector((s) => s.vulnerabilities.filters.sortField);
   const sortDirection = useAppSelector((s) => s.vulnerabilities.filters.sortDirection);
-
-  const onSelectVuln = useCallback((v: Vulnerability) => {
-    setSelectedVuln(v);
-  }, []);
-
-  const addToCompare = useCallback((v: Vulnerability) => {
-    setComparisonList((prev) => {
-      if (prev.some((x) => x.id === v.id)) return prev;
-      return [...prev, v];
-    });
-  }, []);
+  const compareCount = useAppSelector((s) => s.comparison.ids.length);
 
   const handleExportCsv = useCallback(() => {
     downloadVulnerabilitiesCsv(
@@ -61,15 +45,14 @@ export function DashboardPage() {
           >
             Export CSV
           </button>
-          {comparisonList.length > 0 && (
-            <button
-              type="button"
-              onClick={() => setCompareModalOpen(true)}
+          {compareCount >= 2 && (
+            <Link
+              to="/compare"
               className="px-3 py-1.5 rounded-lg text-sm font-medium border border-amber-500/40
                          bg-amber-500/10 text-amber-200 hover:bg-amber-500/20 transition-colors"
             >
-              Compare ({comparisonList.length})
-            </button>
+              Compare ({compareCount})
+            </Link>
           )}
         </div>
       </header>
@@ -88,25 +71,10 @@ export function DashboardPage() {
 
           <FilterBar />
 
-          <VulnerabilityTable onSelectVuln={onSelectVuln} />
+          <VulnerabilityTable />
 
         </main>
       </ErrorBoundary>
-
-      {selectedVuln && (
-        <DetailDrawer
-          vuln={selectedVuln}
-          onClose={() => setSelectedVuln(null)}
-          onAddToCompare={() => addToCompare(selectedVuln)}
-          isInCompareList={comparisonList.some((v) => v.id === selectedVuln.id)}
-        />
-      )}
-
-      <ComparisonView
-        open={compareModalOpen}
-        items={comparisonList}
-        onClose={() => setCompareModalOpen(false)}
-      />
 
     </div>
   );

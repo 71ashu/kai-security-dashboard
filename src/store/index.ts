@@ -1,6 +1,7 @@
 // src/store/index.ts
 import { configureStore } from '@reduxjs/toolkit';
 import vulnerabilitiesReducer, { vulnerabilitiesInitialState } from './vulnerabilitiesSlice';
+import comparisonReducer, { comparisonInitialState } from './comparisonSlice';
 import preferencesReducer, {
   loadPersistedPreferences,
   createPreferencesPersistMiddleware,
@@ -12,6 +13,7 @@ const persistedPreferences = loadPersistedPreferences();
 export const store = configureStore({
   reducer: {
     vulnerabilities: vulnerabilitiesReducer,
+    comparison: comparisonReducer,
     preferences: preferencesReducer,
   },
   preloadedState: {
@@ -24,6 +26,7 @@ export const store = configureStore({
         sortDirection: persistedPreferences.defaultSortDirection,
       },
     },
+    comparison: comparisonInitialState,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

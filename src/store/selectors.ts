@@ -3,6 +3,8 @@ import { createSelector } from '@reduxjs/toolkit';
 import type { RootState } from './index.ts';
 import type { Vulnerability } from '../types/vulnerability';
 
+const selectComparisonIds = (state: RootState) => state.comparison.ids;
+
 const SEVERITY_ORDER: Record<string, number> = {
   critical: 0,
   high: 1,
@@ -210,4 +212,14 @@ export const selectMonthlyTrend = createSelector(
 export const selectFilteredCount = createSelector(
   selectFilteredList,
   (data) => data.length
+);
+
+/** Resolve compare selection to full vulnerability rows, preserving selection order. */
+export const selectCompareVulnerabilities = createSelector(
+  selectAllVulnerabilities,
+  selectComparisonIds,
+  (data, ids) => {
+    const map = new Map(data.map((v) => [v.id, v]));
+    return ids.map((id) => map.get(id)).filter((v): v is Vulnerability => v != null);
+  }
 );
