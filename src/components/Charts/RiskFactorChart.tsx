@@ -11,6 +11,12 @@ import {
 } from 'recharts';
 import { useAppSelector } from '../../store/hooks';
 import { selectRiskFactorFrequency } from '../../store/selectors';
+import { useEffectiveThemeIsDark } from '../../theme/useEffectiveThemeIsDark';
+import {
+  chartAxisTickMuted,
+  chartAxisTickSecondary,
+  chartTooltipContentStyleAlt,
+} from '../../theme/chartTheme';
 
 /** Base / hover (darker) fills by bar rank */
 function barFills(index: number, isHovered: boolean): string {
@@ -26,10 +32,11 @@ function barFills(index: number, isHovered: boolean): string {
 export function RiskFactorChart() {
   const data = useAppSelector(selectRiskFactorFrequency);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const isDark = useEffectiveThemeIsDark();
 
   return (
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 flex flex-col gap-3">
-        <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-widest">
+      <div className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col gap-3 dark:bg-gray-900 dark:border-gray-800">
+        <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-widest dark:text-gray-300">
           Top Risk Factors
         </h3>
         <ResponsiveContainer width="100%" height={260}>
@@ -40,7 +47,7 @@ export function RiskFactorChart() {
           >
             <XAxis
               type="number"
-              tick={{ fill: '#6b7280', fontSize: 11 }}
+              tick={{ fill: chartAxisTickMuted(isDark), fontSize: 11 }}
               tickLine={false}
               axisLine={false}
               tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
@@ -49,21 +56,19 @@ export function RiskFactorChart() {
               type="category"
               dataKey="name"
               width={160}
-              tick={{ fill: '#9ca3af', fontSize: 11 }}
+              tick={{ fill: chartAxisTickSecondary(isDark), fontSize: 11 }}
               tickLine={false}
               axisLine={false}
             />
             <Tooltip
                 cursor={false}
-                contentStyle={{
-                  backgroundColor: '#1f2937',
-                  border: '1px solid #4b5563',
-                  borderRadius: '8px',
-                  color: '#f9fafb',
-                  fontSize: '13px',
+                contentStyle={chartTooltipContentStyleAlt(isDark)}
+                labelStyle={{
+                  color: isDark ? '#f9fafb' : '#111827',
+                  fontWeight: 600,
+                  marginBottom: 4,
                 }}
-                labelStyle={{ color: '#f9fafb', fontWeight: 600, marginBottom: 4 }}
-                itemStyle={{ color: '#f9fafb' }}
+                itemStyle={{ color: isDark ? '#f9fafb' : '#111827' }}
                 formatter={(value) => [Number(value ?? 0).toLocaleString(), 'CVEs']}
             />
             <Bar

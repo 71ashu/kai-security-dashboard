@@ -16,12 +16,12 @@ function App() {
       <DataLoader />
 
       {error && (
-        <div className="fixed inset-0 bg-gray-950 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-gray-50 dark:bg-gray-950 flex items-center justify-center z-50">
           <div className="text-center space-y-3 px-8">
-            <div className="text-red-500 text-xl font-semibold">
+            <div className="text-red-600 dark:text-red-500 text-xl font-semibold">
               Failed to load dataset
             </div>
-            <p className="text-gray-400 text-sm">{error}</p>
+            <p className="text-gray-600 dark:text-gray-400 text-sm">{error}</p>
             <button
               onClick={() => window.location.reload()}
               className="mt-4 px-4 py-2 bg-red-600 text-white rounded text-sm hover:bg-red-700"

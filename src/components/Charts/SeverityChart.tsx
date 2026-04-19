@@ -10,6 +10,8 @@ import {
 } from 'recharts';
 import { useAppSelector } from '../../store/hooks';
 import { selectSeverityDistribution } from '../../store/selectors';
+import { useEffectiveThemeIsDark } from '../../theme/useEffectiveThemeIsDark';
+import { chartLegendTextColor, chartTooltipContentStyle } from '../../theme/chartTheme';
 
 const SEVERITY_COLORS: Record<string, string> = {
   critical: '#ef4444',
@@ -39,10 +41,11 @@ export function SeverityChart() {
   const data = useAppSelector(selectSeverityDistribution);
   const filtered = data.filter((d) => d.value > 0);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const isDark = useEffectiveThemeIsDark();
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 flex flex-col gap-3">
-      <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-widest">
+    <div className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col gap-3 dark:bg-gray-900 dark:border-gray-800">
+      <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-widest dark:text-gray-300">
         Severity Distribution
       </h3>
       <ResponsiveContainer width="100%" height={260}>
@@ -55,7 +58,7 @@ export function SeverityChart() {
             outerRadius={100}
             paddingAngle={3}
             dataKey="value"
-            stroke="#ffffff"
+            stroke={isDark ? '#ffffff' : '#f3f4f6'}
             strokeWidth={1}
             rootTabIndex={-1}
             onMouseEnter={(_entry, index) => setHoveredIndex(index)}
@@ -69,12 +72,7 @@ export function SeverityChart() {
             ))}
           </Pie>
           <Tooltip
-            contentStyle={{
-              backgroundColor: '#111827',
-              border: '1px solid #374151',
-              borderRadius: '8px',
-              color: '#f9fafb',
-            }}
+            contentStyle={chartTooltipContentStyle(isDark)}
             formatter={(value, name) => [
               Number(value ?? 0).toLocaleString(),
               String(name ?? '').charAt(0).toUpperCase() + String(name ?? '').slice(1),
@@ -82,7 +80,7 @@ export function SeverityChart() {
           />
           <Legend
             formatter={(value) => (
-              <span style={{ color: '#9ca3af', fontSize: 12 }}>
+              <span style={{ color: chartLegendTextColor(isDark), fontSize: 12 }}>
                 {value.charAt(0).toUpperCase() + value.slice(1)}
               </span>
             )}

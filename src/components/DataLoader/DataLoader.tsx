@@ -67,25 +67,25 @@ export function DataLoader() {
   if (!isLoading) return null;
 
   return (
-    <div className="fixed inset-0 bg-gray-950 flex flex-col items-center justify-center z-50">
+    <div className="fixed inset-0 bg-gray-50 dark:bg-gray-950 flex flex-col items-center justify-center z-50">
       <div className="w-full max-w-md px-8 space-y-6">
         <div className="text-center space-y-2">
-          <div className="text-3xl font-bold text-white tracking-tight">
-            KAI <span className="text-red-500">Security</span>
+          <div className="text-3xl font-bold text-gray-900 tracking-tight dark:text-white">
+            KAI <span className="text-red-600 dark:text-red-500">Security</span>
           </div>
-          <p className="text-gray-400 text-sm">
+          <p className="text-gray-600 text-sm dark:text-gray-400">
             Loading vulnerability dataset...
           </p>
         </div>
 
         <div className="space-y-2">
-          <div className="w-full bg-gray-800 rounded-full h-2 overflow-hidden">
+          <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden dark:bg-gray-800">
             <div
-              className="h-2 rounded-full bg-red-500 transition-all duration-300 ease-out"
+              className="h-2 rounded-full bg-red-600 dark:bg-red-500 transition-all duration-300 ease-out"
               style={{ width: `${progress}%` }}
             />
           </div>
-          <div className="flex justify-between text-xs text-gray-500">
+          <div className="flex justify-between text-xs text-gray-500 dark:text-gray-500">
             <span>{totalLoaded.toLocaleString()} vulnerabilities loaded</span>
             <span>{progress}%</span>
           </div>
@@ -95,7 +95,7 @@ export function DataLoader() {
           {[0, 1, 2].map((i) => (
             <div
               key={i}
-              className="w-1.5 h-1.5 rounded-full bg-red-500 animate-bounce"
+              className="w-1.5 h-1.5 rounded-full bg-red-600 dark:bg-red-500 animate-bounce"
               style={{ animationDelay: `${i * 150}ms` }}
             />
           ))}

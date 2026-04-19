@@ -8,6 +8,8 @@ const STORAGE_KEY = 'kai-security-dashboard-preferences';
 
 export type DensityMode = 'comfortable' | 'compact';
 
+export type ThemePreference = 'light' | 'dark' | 'system';
+
 export const TABLE_COLUMNS_META = [
   { key: 'cve' as const, label: 'CVE ID', width: 176, sortable: true },
   { key: 'severity' as const, label: 'Severity', width: 112, sortable: true },
@@ -31,6 +33,7 @@ export interface PreferencesState {
   defaultSortField: keyof Vulnerability;
   defaultSortDirection: 'asc' | 'desc';
   densityMode: DensityMode;
+  theme: ThemePreference;
 }
 
 export const DEFAULT_PREFERENCES: PreferencesState = {
@@ -38,6 +41,7 @@ export const DEFAULT_PREFERENCES: PreferencesState = {
   defaultSortField: 'published',
   defaultSortDirection: 'desc',
   densityMode: 'comfortable',
+  theme: 'dark',
 };
 
 function normalizeVisibleColumns(raw: unknown): TableColumnKey[] {
@@ -68,11 +72,16 @@ export function loadPersistedPreferences(): PreferencesState {
     if (parsed.densityMode === 'comfortable' || parsed.densityMode === 'compact') {
       densityMode = parsed.densityMode;
     }
+    let theme: ThemePreference = DEFAULT_PREFERENCES.theme;
+    if (parsed.theme === 'light' || parsed.theme === 'dark' || parsed.theme === 'system') {
+      theme = parsed.theme;
+    }
     return {
       visibleColumns,
       defaultSortField,
       defaultSortDirection,
       densityMode,
+      theme,
     };
   } catch {
     return { ...DEFAULT_PREFERENCES, visibleColumns: [...ORDERED_KEYS] };
@@ -107,6 +116,9 @@ const preferencesSlice = createSlice({
     densityModeSet(state, action: PayloadAction<DensityMode>) {
       state.densityMode = action.payload;
     },
+    themeSet(state, action: PayloadAction<ThemePreference>) {
+      state.theme = action.payload;
+    },
     sortPreferencesSynced(
       state,
       action: PayloadAction<{ field: keyof Vulnerability; direction: 'asc' | 'desc' }>
@@ -126,6 +138,7 @@ const preferencesSlice = createSlice({
 export const {
   columnVisibilityToggled,
   densityModeSet,
+  themeSet,
   sortPreferencesSynced,
   preferencesResetToDefaults,
 } = preferencesSlice.actions;
@@ -137,6 +150,7 @@ export function createPreferencesPersistMiddleware(): Middleware {
     const result = next(action);
     if (preferencesSlice.actions.columnVisibilityToggled.match(action)
       || preferencesSlice.actions.densityModeSet.match(action)
+      || preferencesSlice.actions.themeSet.match(action)
       || preferencesSlice.actions.sortPreferencesSynced.match(action)
       || preferencesSlice.actions.preferencesResetToDefaults.match(action)) {
       persistPreferences(store.getState().preferences);

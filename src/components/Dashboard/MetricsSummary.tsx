@@ -15,11 +15,11 @@ function MetricCard({ label, value, sub, accent }: MetricCardProps) {
   return (
     <div className={`rounded-xl p-5 flex flex-col gap-1 border ${
       accent
-        ? 'bg-red-950/40 border-red-800/50'
-        : 'bg-gray-900 border-gray-800'
+        ? 'bg-red-50 border-red-200/80 dark:bg-red-950/40 dark:border-red-800/50'
+        : 'bg-white border-gray-200 dark:bg-gray-900 dark:border-gray-800'
     }`}>
       <span className="text-xs text-gray-500 uppercase tracking-widest">{label}</span>
-      <span className={`text-3xl font-bold tabular-nums ${accent ? 'text-red-400' : 'text-white'}`}>
+      <span className={`text-3xl font-bold tabular-nums ${accent ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'}`}>
         {typeof value === 'number' ? value.toLocaleString() : value}
       </span>
       {sub && <span className="text-xs text-gray-500">{sub}</span>}

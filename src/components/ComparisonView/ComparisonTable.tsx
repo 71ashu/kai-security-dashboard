@@ -33,14 +33,14 @@ const ROWS: RowDef[] = [
 ];
 
 const headerLinkClass =
-  'block font-mono font-semibold text-blue-400 hover:text-blue-300 transition-colors ' +
+  'block font-mono font-semibold text-blue-600 hover:text-blue-700 transition-colors ' +
   'break-words [overflow-wrap:anywhere] focus-visible:outline focus-visible:ring-2 ' +
-  'focus-visible:ring-blue-500 rounded-sm';
+  'focus-visible:ring-blue-500 rounded-sm dark:text-blue-400 dark:hover:text-blue-300';
 
 const valueLinkClass =
-  'block whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-gray-300 ' +
-  'hover:text-white transition-colors focus-visible:outline focus-visible:ring-2 ' +
-  'focus-visible:ring-blue-500 rounded-sm';
+  'block whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-gray-800 ' +
+  'hover:text-gray-900 transition-colors focus-visible:outline focus-visible:ring-2 ' +
+  'focus-visible:ring-blue-500 rounded-sm dark:text-gray-300 dark:hover:text-white';
 
 interface Props {
   items: Vulnerability[];
@@ -48,7 +48,7 @@ interface Props {
 
 export function ComparisonTable({ items }: Props) {
   if (items.length === 0) {
-    return <p className="text-gray-500 text-sm text-center py-8">No items selected.</p>;
+    return <p className="text-gray-500 text-sm text-center py-8 dark:text-gray-500">No items selected.</p>;
   }
 
   return (
@@ -70,15 +70,15 @@ export function ComparisonTable({ items }: Props) {
         <thead>
           <tr>
             <th
-              className="sticky left-0 z-10 bg-gray-900 border border-gray-800 px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500
-                w-36 max-md:min-w-36 max-md:max-w-36 md:w-auto md:max-w-none"
+              className="sticky left-0 z-10 bg-gray-50 border border-gray-200 px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500
+                w-36 max-md:min-w-36 max-md:max-w-36 md:w-auto md:max-w-none dark:bg-gray-900 dark:border-gray-800"
             >
               Field
             </th>
             {items.map((v) => (
               <th
                 key={v.id}
-                className="border border-gray-800 px-3 py-2 text-left align-top
+                className="border border-gray-200 px-3 py-2 text-left align-top dark:border-gray-800
                   max-md:w-[11rem] max-md:min-w-[11rem] max-md:max-w-[11rem]
                   min-w-0"
               >
@@ -93,7 +93,8 @@ export function ComparisonTable({ items }: Props) {
           {ROWS.map((row) => (
             <tr key={row.label}>
               <td
-                className="sticky left-0 z-10 bg-gray-900/95 border border-gray-800 px-3 py-2 text-gray-500 text-xs uppercase tracking-wider align-top
+                className="sticky left-0 z-10 bg-gray-50/95 border border-gray-200 px-3 py-2 text-gray-500 text-xs uppercase tracking-wider align-top
+                  dark:bg-gray-900/95 dark:border-gray-800
                   w-36 max-md:min-w-36 max-md:max-w-36 md:w-auto md:max-w-none"
               >
                 <span className="block whitespace-normal break-words [overflow-wrap:anywhere]">
@@ -103,7 +104,7 @@ export function ComparisonTable({ items }: Props) {
               {items.map((v) => (
                 <td
                   key={`${v.id}-${row.label}`}
-                  className="border border-gray-800 px-3 py-2 align-top
+                  className="border border-gray-200 px-3 py-2 align-top dark:border-gray-800
                     max-md:w-[11rem] max-md:min-w-[11rem] max-md:max-w-[11rem]
                     md:min-w-0 md:max-w-0"
                 >
