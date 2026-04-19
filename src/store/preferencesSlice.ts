@@ -41,7 +41,7 @@ export const DEFAULT_PREFERENCES: PreferencesState = {
   defaultSortField: 'published',
   defaultSortDirection: 'desc',
   densityMode: 'comfortable',
-  theme: 'dark',
+  theme: 'system',
 };
 
 function normalizeVisibleColumns(raw: unknown): TableColumnKey[] {
