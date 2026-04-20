@@ -1,5 +1,15 @@
 // src/components/FilterBar/FilterBar.tsx
-import { useCallback, useState } from 'react';
+import {
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+} from 'react';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import {
   filterModeSet,
@@ -11,6 +21,7 @@ import {
   selectFilterImpact,
   selectFilteredCount,
 } from '../../store/selectors';
+import { buildSearchSuggestions } from '../../utils/searchSuggestions';
 import type { Severity } from '../../types/vulnerability';
 
 const SEVERITIES: Severity[] = ['critical', 'high', 'medium', 'low'];
@@ -28,24 +39,133 @@ const SEVERITY_COLORS: Record<Severity, string> = {
     'bg-gray-500/15 text-gray-700 border-gray-400/50 hover:bg-gray-500/25 dark:bg-gray-500/20 dark:text-gray-400 dark:border-gray-500/40 dark:hover:bg-gray-500/30',
 };
 
+const KIND_LABEL: Record<string, string> = {
+  cve: 'CVE',
+  package: 'Package',
+  group: 'Group',
+  repo: 'Repository',
+};
+
 export function FilterBar() {
   const dispatch = useAppDispatch();
   const filterMode = useAppSelector((s) => s.vulnerabilities.filters.filterMode);
   const severityFilter = useAppSelector((s) => s.vulnerabilities.filters.severityFilter);
   const searchQuery = useAppSelector((s) => s.vulnerabilities.filters.searchQuery);
+  const allVulnerabilities = useAppSelector((s) => s.vulnerabilities.data);
   const filteredCount = useAppSelector(selectFilteredCount);
   const { analysisCount, aiAnalysisCount, bothCount } = useAppSelector(selectFilterImpact);
 
   const [localSearch, setLocalSearch] = useState(searchQuery);
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
+  const [highlightIndex, setHighlightIndex] = useState(-1);
 
-  // Debounce search dispatch
-  const handleSearch = useCallback((val: string) => {
-    setLocalSearch(val);
-    clearTimeout((window as any).__searchTimer);
-    (window as any).__searchTimer = setTimeout(() => {
+  const listboxId = useId();
+  const blurCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    setLocalSearch(searchQuery);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    return () => {
+      if (blurCloseTimerRef.current) clearTimeout(blurCloseTimerRef.current);
+    };
+  }, []);
+
+  const deferredSearch = useDeferredValue(localSearch);
+
+  const suggestions = useMemo(
+    () => buildSearchSuggestions(allVulnerabilities, deferredSearch),
+    [allVulnerabilities, deferredSearch]
+  );
+
+  useEffect(() => {
+    setHighlightIndex(-1);
+  }, [deferredSearch, suggestions.length]);
+
+  const dispatchSearch = useCallback(
+    (val: string) => {
       dispatch(searchQuerySet(val));
-    }, 300);
-  }, [dispatch]);
+    },
+    [dispatch]
+  );
+
+  const handleSearchInputChange = useCallback((val: string) => {
+    setLocalSearch(val);
+  }, []);
+
+  const submitSearch = useCallback(() => {
+    dispatchSearch(localSearch);
+  }, [dispatchSearch, localSearch]);
+
+  const applySuggestion = useCallback(
+    (text: string) => {
+      setLocalSearch(text);
+      dispatchSearch(text);
+      setSuggestionsOpen(false);
+      setHighlightIndex(-1);
+    },
+    [dispatchSearch]
+  );
+
+  const cancelBlurClose = useCallback(() => {
+    if (blurCloseTimerRef.current) {
+      clearTimeout(blurCloseTimerRef.current);
+      blurCloseTimerRef.current = null;
+    }
+  }, []);
+
+  const scheduleBlurClose = useCallback(() => {
+    cancelBlurClose();
+    blurCloseTimerRef.current = setTimeout(() => {
+      setSuggestionsOpen(false);
+      setHighlightIndex(-1);
+    }, 120);
+  }, [cancelBlurClose]);
+
+  const onSearchKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') {
+        if (suggestions.length > 0 && highlightIndex >= 0 && suggestions[highlightIndex]) {
+          e.preventDefault();
+          applySuggestion(suggestions[highlightIndex].primary);
+          return;
+        }
+        e.preventDefault();
+        dispatchSearch(localSearch);
+        setSuggestionsOpen(false);
+        setHighlightIndex(-1);
+        return;
+      }
+
+      if (e.key === 'Escape') {
+        if (suggestionsOpen) {
+          e.preventDefault();
+          setSuggestionsOpen(false);
+          setHighlightIndex(-1);
+        }
+        return;
+      }
+
+      if (!suggestions.length) return;
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSuggestionsOpen(true);
+        setHighlightIndex((i) => {
+          if (i < suggestions.length - 1) return i + 1;
+          return i;
+        });
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSuggestionsOpen(true);
+        setHighlightIndex((i) => (i > 0 ? i - 1 : -1));
+      }
+    },
+    [suggestions, highlightIndex, applySuggestion, suggestionsOpen, dispatchSearch, localSearch]
+  );
 
   const toggleSeverity = (sev: Severity) => {
     if (severityFilter.includes(sev)) {
@@ -60,32 +180,116 @@ export function FilterBar() {
   const hasActiveFilters =
     filterMode !== 'none' || severityFilter.length > 0 || searchQuery !== '';
 
+  const showSuggestionsPanel =
+    suggestionsOpen && suggestions.length > 0 && allVulnerabilities.length > 0;
+
+  useLayoutEffect(() => {
+    if (!showSuggestionsPanel || highlightIndex < 0) return;
+    const el = document.getElementById(`${listboxId}-opt-${highlightIndex}`);
+    el?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  }, [showSuggestionsPanel, highlightIndex, listboxId]);
+
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4 dark:bg-gray-900 dark:border-gray-800">
 
       {/* Top row: search + reset */}
       <div className="flex items-center gap-3">
-        <div className="relative flex-1">
-          <svg
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500"
-            fill="none" viewBox="0 0 24 24" stroke="currentColor"
+        <div className="flex items-stretch gap-2 flex-1 min-w-0">
+          <div className="relative flex-1 min-w-0">
+            <svg
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none z-10"
+              fill="none" viewBox="0 0 24 24" stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+            </svg>
+            <input
+              type="text"
+              role="combobox"
+              aria-autocomplete="list"
+              aria-expanded={showSuggestionsPanel}
+              aria-controls={showSuggestionsPanel ? listboxId : undefined}
+              aria-activedescendant={
+                showSuggestionsPanel && highlightIndex >= 0
+                  ? `${listboxId}-opt-${highlightIndex}`
+                  : undefined
+              }
+              value={localSearch}
+              onChange={(e) => handleSearchInputChange(e.target.value)}
+              onKeyDown={onSearchKeyDown}
+              onFocus={() => {
+                cancelBlurClose();
+                setSuggestionsOpen(true);
+              }}
+              onBlur={scheduleBlurClose}
+              placeholder="Search by CVE ID, package, description..."
+              autoComplete="off"
+              className="w-full bg-gray-50 border border-gray-300 rounded-lg pl-9 pr-4 py-2.5
+                         text-sm text-gray-900 placeholder-gray-500
+                         focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500
+                         dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:placeholder-gray-500"
+            />
+            {showSuggestionsPanel && (
+              <ul
+                id={listboxId}
+                role="listbox"
+                className="absolute left-0 right-0 top-full z-20 mt-1 max-h-64 overflow-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg
+                           dark:border-gray-700 dark:bg-gray-900"
+              >
+                {suggestions.map((s, index) => (
+                  <li
+                    key={s.id}
+                    id={`${listboxId}-opt-${index}`}
+                    role="option"
+                    aria-selected={highlightIndex === index}
+                    className={`flex items-start gap-2 px-3 py-2 text-sm cursor-pointer
+                      ${highlightIndex === index
+                        ? 'bg-blue-50 dark:bg-blue-950/50'
+                        : 'hover:bg-gray-50 dark:hover:bg-gray-800/80'
+                      }`}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      cancelBlurClose();
+                      applySuggestion(s.primary);
+                    }}
+                    onMouseEnter={() => setHighlightIndex(index)}
+                  >
+                    <span
+                      className="shrink-0 mt-0.5 rounded px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide
+                                 bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+                    >
+                      {KIND_LABEL[s.kind] ?? s.kind}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="font-mono text-gray-900 dark:text-gray-100 break-all">
+                        {s.primary}
+                      </span>
+                      {s.secondary && (
+                        <span className="block text-xs text-gray-500 dark:text-gray-500 truncate">
+                          {s.secondary}
+                        </span>
+                      )}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={submitSearch}
+            className="shrink-0 px-4 py-2.5 rounded-lg text-sm font-medium border border-blue-600
+                       bg-blue-600 text-white hover:bg-blue-700 hover:border-blue-700
+                       focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:ring-offset-2 focus:ring-offset-white
+                       dark:focus:ring-offset-gray-900 transition-colors"
+            aria-label="Search vulnerabilities"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-              d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
-          </svg>
-          <input
-            type="text"
-            value={localSearch}
-            onChange={(e) => handleSearch(e.target.value)}
-            placeholder="Search by CVE ID, package, description..."
-            className="w-full bg-gray-50 border border-gray-300 rounded-lg pl-9 pr-4 py-2.5
-                       text-sm text-gray-900 placeholder-gray-500
-                       focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500
-                       dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:placeholder-gray-500"
-          />
+            Search
+          </button>
         </div>
         {hasActiveFilters && (
           <button
+            type="button"
             onClick={() => {
               dispatch(filtersReset());
               setLocalSearch('');
@@ -108,6 +312,7 @@ export function FilterBar() {
           {SEVERITIES.map((sev) => (
             <button
               key={sev}
+              type="button"
               onClick={() => toggleSeverity(sev)}
               className={`px-3 py-1 text-xs font-medium rounded-full border transition-all
                 ${SEVERITY_COLORS[sev]}
@@ -129,6 +334,7 @@ export function FilterBar() {
 
           {/* Analysis button */}
           <button
+            type="button"
             onClick={() => dispatch(filterModeSet('analysis'))}
             className={`group relative flex items-center gap-2 px-4 py-2 rounded-lg
                         border text-sm font-medium transition-all duration-200
@@ -153,6 +359,7 @@ export function FilterBar() {
 
           {/* AI Analysis button */}
           <button
+            type="button"
             onClick={() => dispatch(filterModeSet('ai-analysis'))}
             className={`group relative flex items-center gap-2 px-4 py-2 rounded-lg
                         border text-sm font-medium transition-all duration-200
