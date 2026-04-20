@@ -193,7 +193,7 @@ export function FilterBar() {
     <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-4 dark:bg-gray-900 dark:border-gray-800">
 
       {/* Top row: search + reset */}
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <div className="flex items-stretch gap-2 flex-1 min-w-0">
           <div className="relative flex-1 min-w-0">
             <svg
@@ -307,7 +307,7 @@ export function FilterBar() {
       <div className="flex flex-wrap items-center gap-3">
 
         {/* Severity filters */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs text-gray-500 uppercase tracking-wider">Severity:</span>
           {SEVERITIES.map((sev) => (
             <button
@@ -326,10 +326,10 @@ export function FilterBar() {
           ))}
         </div>
 
-        <div className="h-4 w-px bg-gray-300 dark:bg-gray-700" />
+        <div className="hidden sm:block h-4 w-px bg-gray-300 dark:bg-gray-700" />
 
         {/* Analysis buttons -- the core Kai feature */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs text-gray-500 uppercase tracking-wider">KAI:</span>
 
           {/* Analysis button */}
@@ -392,7 +392,7 @@ export function FilterBar() {
         </div>
 
         {/* Result count */}
-        <div className="ml-auto text-sm text-gray-600 dark:text-gray-400">
+        <div className="ml-auto shrink-0 text-sm text-gray-600 dark:text-gray-400">
           <span className="text-gray-900 font-semibold tabular-nums dark:text-white">
             {filteredCount.toLocaleString()}
           </span>
