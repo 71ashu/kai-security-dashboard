@@ -1,7 +1,6 @@
-// src/components/Layout/AppHeader.tsx
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { ThemeToggle } from '../ThemeToggle/ThemeToggle';
+import { ThemeToggle } from '../ThemeToggle';
 import { PreferencesMenu } from '../PreferencesMenu';
 
 interface AppHeaderProps {

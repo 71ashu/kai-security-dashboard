@@ -1,4 +1,3 @@
-// src/components/Dashboard/MetricsSummary.tsx
 import { useAppSelector } from '../../store/hooks';
 import { selectFilterImpact, selectFilteredCount } from '../../store/selectors';
 

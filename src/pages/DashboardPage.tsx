@@ -1,15 +1,14 @@
-// src/components/Dashboard/DashboardPage.tsx
 import { useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ErrorBoundary } from '../ErrorBoundary';
-import { AppHeader } from '../Layout';
-import { MetricsSummary } from './MetricsSummary';
-import { RiskFactorChart, SeverityChart, TrendChart } from '../Charts';
-import { FilterBar } from '../FilterBar';
-import { VulnerabilityTable } from '../VulnerabilityTable';
-import { useAppSelector } from '../../store/hooks';
-import { selectFilteredList, sortVulnerabilities } from '../../store/selectors';
-import { downloadVulnerabilitiesCsv } from '../../utils/export';
+import { ErrorBoundary } from '../components/ErrorBoundary';
+import { AppHeader } from '../components/Layout';
+import { MetricsSummary } from '../components/MetricsSummary';
+import { RiskFactorChart, SeverityChart, TrendChart } from '../components/Charts';
+import { FilterBar } from '../components/FilterBar';
+import { VulnerabilityTable } from '../components/VulnerabilityTable';
+import { useAppSelector } from '../store/hooks';
+import { selectFilteredList, sortVulnerabilities } from '../store/selectors';
+import { downloadVulnerabilitiesCsv } from '../utils';
 
 export function DashboardPage() {
   const filteredList = useAppSelector(selectFilteredList);
@@ -53,7 +52,6 @@ export function DashboardPage() {
         }
       />
 
-      {/* Main content */}
       <ErrorBoundary>
         <main className="px-8 py-6 space-y-6 max-w-screen-2xl mx-auto">
 

@@ -1,5 +1,5 @@
 // src/utils/searchSuggestions.ts
-import type { Vulnerability } from '../types/vulnerability';
+import type { Vulnerability } from '../types';
 
 export type SearchSuggestionKind = 'cve' | 'package' | 'group' | 'repo';
 

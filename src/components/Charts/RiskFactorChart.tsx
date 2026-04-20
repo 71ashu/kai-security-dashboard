@@ -11,12 +11,7 @@ import {
 } from 'recharts';
 import { useAppSelector } from '../../store/hooks';
 import { selectRiskFactorFrequency } from '../../store/selectors';
-import { useEffectiveThemeIsDark } from '../../theme/useEffectiveThemeIsDark';
-import {
-  chartAxisTickMuted,
-  chartAxisTickSecondary,
-  chartTooltipContentStyleAlt,
-} from '../../theme/chartTheme';
+import { useEffectiveThemeIsDark, chartAxisTickMuted, chartAxisTickSecondary, chartTooltipContentStyleAlt } from '../../theme';
 
 /** Base / hover (darker) fills by bar rank */
 function barFills(index: number, isHovered: boolean): string {

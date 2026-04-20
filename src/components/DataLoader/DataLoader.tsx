@@ -12,7 +12,7 @@ import {
 import { compareSelectionCleared } from '../../store/comparisonSlice';
 import { DATA_URL } from '../../config';
 import { createDataLoaderWorker } from '../../workers';
-import type { WorkerMessage } from '../../types/vulnerability';
+import type { WorkerMessage } from '../../types';
 
 export function DataLoader() {
   const dispatch = useAppDispatch();

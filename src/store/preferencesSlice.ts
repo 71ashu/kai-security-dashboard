@@ -1,7 +1,7 @@
 // src/store/preferencesSlice.ts
 import { createSlice } from '@reduxjs/toolkit';
 import type { Middleware, PayloadAction } from '@reduxjs/toolkit';
-import type { Vulnerability } from '../types/vulnerability';
+import type { Vulnerability } from '../types';
 import { sortChanged } from './vulnerabilitiesSlice';
 
 const STORAGE_KEY = 'kai-security-dashboard-preferences';

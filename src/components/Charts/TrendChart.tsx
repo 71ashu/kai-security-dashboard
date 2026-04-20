@@ -5,12 +5,7 @@ import {
   } from 'recharts';
   import { useAppSelector } from '../../store/hooks';
   import { selectMonthlyTrend } from '../../store/selectors';
-  import { useEffectiveThemeIsDark } from '../../theme/useEffectiveThemeIsDark';
-  import {
-    chartAxisTickMuted,
-    chartGridStroke,
-    chartTooltipContentStyle,
-  } from '../../theme/chartTheme';
+  import { useEffectiveThemeIsDark, chartAxisTickMuted, chartGridStroke, chartTooltipContentStyle } from '../../theme';
   
   export function TrendChart() {
     const data = useAppSelector(selectMonthlyTrend);

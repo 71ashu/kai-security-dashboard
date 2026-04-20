@@ -1,9 +1,6 @@
-// src/App.tsx
 import { Routes, Route } from 'react-router-dom';
 import { DataLoader } from './components/DataLoader';
-import { DashboardPage } from './components/Dashboard/DashboardPage';
-import { VulnerabilityDetailPage } from './components/VulnerabilityDetail';
-import { ComparisonPage } from './components/ComparisonView';
+import { DashboardPage, VulnerabilityDetailPage, ComparisonPage } from './pages';
 import { useAppSelector } from './store/hooks';
 
 function App() {

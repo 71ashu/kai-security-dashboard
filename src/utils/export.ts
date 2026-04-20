@@ -1,5 +1,5 @@
 // src/utils/export.ts
-import type { Vulnerability } from '../types/vulnerability';
+import type { Vulnerability } from '../types';
 
 function escapeCsvCell(value: string): string {
   if (/[",\n\r]/.test(value)) {

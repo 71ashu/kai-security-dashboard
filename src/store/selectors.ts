@@ -1,7 +1,7 @@
 // src/store/selectors.ts
 import { createSelector } from '@reduxjs/toolkit';
 import type { RootState } from './index.ts';
-import type { Vulnerability } from '../types/vulnerability';
+import type { Vulnerability } from '../types';
 
 const selectComparisonIds = (state: RootState) => state.comparison.ids;
 

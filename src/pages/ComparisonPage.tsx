@@ -1,11 +1,10 @@
-// src/components/ComparisonView/ComparisonPage.tsx
 import { Link } from 'react-router-dom';
-import { ErrorBoundary } from '../ErrorBoundary';
-import { AppHeader } from '../Layout';
-import { ComparisonTable } from './ComparisonTable';
-import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { selectCompareVulnerabilities } from '../../store/selectors';
-import { compareSelectionCleared } from '../../store/comparisonSlice';
+import { ErrorBoundary } from '../components/ErrorBoundary';
+import { AppHeader } from '../components/Layout';
+import { ComparisonTable } from '../components/ComparisonView';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { selectCompareVulnerabilities } from '../store/selectors';
+import { compareSelectionCleared } from '../store/comparisonSlice';
 
 export function ComparisonPage() {
   const dispatch = useAppDispatch();

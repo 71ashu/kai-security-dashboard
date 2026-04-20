@@ -21,8 +21,8 @@ import {
   selectFilterImpact,
   selectFilteredCount,
 } from '../../store/selectors';
-import { buildSearchSuggestions } from '../../utils/searchSuggestions';
-import type { Severity } from '../../types/vulnerability';
+import { buildSearchSuggestions } from '../../utils';
+import type { Severity } from '../../types';
 
 const SEVERITIES: Severity[] = ['critical', 'high', 'medium', 'low'];
 

@@ -1,7 +1,7 @@
 // src/store/vulnerabilitiesSlice.ts
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
-import type { Vulnerability, FilterState, FilterMode, Severity } from '../types/vulnerability';
+import type { Vulnerability, FilterState, FilterMode, Severity } from '../types';
 
 interface VulnerabilitiesState {
   data: Vulnerability[];

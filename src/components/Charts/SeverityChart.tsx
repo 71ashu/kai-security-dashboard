@@ -10,8 +10,7 @@ import {
 } from 'recharts';
 import { useAppSelector } from '../../store/hooks';
 import { selectSeverityDistribution } from '../../store/selectors';
-import { useEffectiveThemeIsDark } from '../../theme/useEffectiveThemeIsDark';
-import { chartLegendTextColor, chartTooltipContentStyle } from '../../theme/chartTheme';
+import { useEffectiveThemeIsDark, chartLegendTextColor, chartTooltipContentStyle } from '../../theme';
 
 const SEVERITY_COLORS: Record<string, string> = {
   critical: '#ef4444',

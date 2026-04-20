@@ -1,6 +1,6 @@
 // src/workers/dataLoader.worker.ts
 import { JSONParser } from '@streamparser/json';
-import type { RawImage, RawVulnerability, Vulnerability, WorkerMessage } from '../types/vulnerability';
+import type { RawImage, RawVulnerability, Vulnerability, WorkerMessage } from '../types';
 
 const BATCH_SIZE = 500;
 

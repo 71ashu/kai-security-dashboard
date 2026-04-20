@@ -1,7 +1,7 @@
 // src/components/ComparisonView/ComparisonTable.tsx
 import type { CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
-import type { Vulnerability } from '../../types/vulnerability';
+import type { Vulnerability } from '../../types';
 
 function detailPath(v: Vulnerability): string {
   return `/vulnerability/${encodeURIComponent(v.id)}`;

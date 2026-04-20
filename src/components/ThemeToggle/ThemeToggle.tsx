@@ -1,7 +1,7 @@
 import { Moon, Sun } from 'lucide-react';
 import { useAppDispatch } from '../../store/hooks';
 import { themeSet } from '../../store/preferencesSlice';
-import { useEffectiveThemeIsDark } from '../../theme/useEffectiveThemeIsDark';
+import { useEffectiveThemeIsDark } from '../../theme';
 
 export function ThemeToggle() {
   const dispatch = useAppDispatch();
