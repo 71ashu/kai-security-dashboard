@@ -1,1 +1,16 @@
-export type { Severity, KaiStatus, FilterMode, RawVulnerability, Vulnerability, RawImage, RawRepo, RawGroup, RawDataRoot, FilterState, WorkerMessage } from './vulnerability';
+export type {
+  Severity,
+  KaiStatus,
+  FilterMode,
+  RawVulnerability,
+  Vulnerability,
+  RawImage,
+  RawRepo,
+  RawGroup,
+  RawDataRoot,
+  FilterState,
+  WorkerMessage,
+  VulnerabilityDisplayKey,
+  VulnerabilityFieldLayout,
+  VulnerabilityFieldProps,
+} from './vulnerability';
