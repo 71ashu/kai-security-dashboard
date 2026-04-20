@@ -8,6 +8,9 @@ const STORAGE_KEY = 'kai-security-dashboard-preferences';
 
 export type DensityMode = 'comfortable' | 'compact';
 
+export const PAGE_SIZE_OPTIONS = [25, 50, 100, 200] as const;
+export type PageSize = (typeof PAGE_SIZE_OPTIONS)[number];
+
 export type ThemePreference = 'light' | 'dark' | 'system';
 
 export const TABLE_COLUMNS_META = [
@@ -34,6 +37,7 @@ export interface PreferencesState {
   defaultSortDirection: 'asc' | 'desc';
   densityMode: DensityMode;
   theme: ThemePreference;
+  pageSize: PageSize;
 }
 
 export const DEFAULT_PREFERENCES: PreferencesState = {
@@ -42,6 +46,7 @@ export const DEFAULT_PREFERENCES: PreferencesState = {
   defaultSortDirection: 'desc',
   densityMode: 'comfortable',
   theme: 'system',
+  pageSize: 50,
 };
 
 function normalizeVisibleColumns(raw: unknown): TableColumnKey[] {
@@ -76,12 +81,17 @@ export function loadPersistedPreferences(): PreferencesState {
     if (parsed.theme === 'light' || parsed.theme === 'dark' || parsed.theme === 'system') {
       theme = parsed.theme;
     }
+    let pageSize: PageSize = DEFAULT_PREFERENCES.pageSize;
+    if (PAGE_SIZE_OPTIONS.includes(parsed.pageSize as PageSize)) {
+      pageSize = parsed.pageSize as PageSize;
+    }
     return {
       visibleColumns,
       defaultSortField,
       defaultSortDirection,
       densityMode,
       theme,
+      pageSize,
     };
   } catch {
     return { ...DEFAULT_PREFERENCES, visibleColumns: [...ORDERED_KEYS] };
@@ -126,11 +136,15 @@ const preferencesSlice = createSlice({
       state.defaultSortField = action.payload.field;
       state.defaultSortDirection = action.payload.direction;
     },
+    pageSizeChanged(state, action: PayloadAction<PageSize>) {
+      state.pageSize = action.payload;
+    },
     preferencesResetToDefaults(state) {
       state.visibleColumns = [...DEFAULT_PREFERENCES.visibleColumns];
       state.defaultSortField = DEFAULT_PREFERENCES.defaultSortField;
       state.defaultSortDirection = DEFAULT_PREFERENCES.defaultSortDirection;
       state.densityMode = DEFAULT_PREFERENCES.densityMode;
+      state.pageSize = DEFAULT_PREFERENCES.pageSize;
     },
   },
 });
@@ -140,6 +154,7 @@ export const {
   densityModeSet,
   themeSet,
   sortPreferencesSynced,
+  pageSizeChanged,
   preferencesResetToDefaults,
 } = preferencesSlice.actions;
 
@@ -152,6 +167,7 @@ export function createPreferencesPersistMiddleware(): Middleware {
       || preferencesSlice.actions.densityModeSet.match(action)
       || preferencesSlice.actions.themeSet.match(action)
       || preferencesSlice.actions.sortPreferencesSynced.match(action)
+      || preferencesSlice.actions.pageSizeChanged.match(action)
       || preferencesSlice.actions.preferencesResetToDefaults.match(action)) {
       persistPreferences(store.getState().preferences);
     }
