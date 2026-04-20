@@ -32,7 +32,33 @@ self.onmessage = async (e: MessageEvent<{ url: string }>) => {
       return;
     }
 
-    const text = await response.text();
+    const contentLength = Number(response.headers.get('Content-Length') ?? '0');
+    const reader = response.body!.getReader();
+    const chunks: Uint8Array[] = [];
+    let bytesReceived = 0;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+      bytesReceived += value.byteLength;
+      if (contentLength > 0) {
+        const downloadProgress: WorkerMessage = {
+          type: 'PROGRESS',
+          loaded: 0,
+          downloadPercent: Math.round((bytesReceived / contentLength) * 100),
+        };
+        self.postMessage(downloadProgress);
+      }
+    }
+
+    const merged = new Uint8Array(bytesReceived);
+    let offset = 0;
+    for (const chunk of chunks) {
+      merged.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
+    const text = new TextDecoder().decode(merged);
     const data = JSON.parse(text) as { groups: Record<string, RawGroup> };
 
     let batch: Vulnerability[] = [];

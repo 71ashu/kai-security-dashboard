@@ -8,6 +8,7 @@ interface VulnerabilitiesState {
   totalLoaded: number;
   isLoading: boolean;
   loadingProgress: number;
+  downloadProgress: number;
   error: string | null;
   filters: FilterState;
 }
@@ -25,6 +26,7 @@ export const vulnerabilitiesInitialState: VulnerabilitiesState = {
   totalLoaded: 0,
   isLoading: false,
   loadingProgress: 0,
+  downloadProgress: 0,
   error: null,
   filters: initialFilterState,
 };
@@ -39,6 +41,10 @@ const vulnerabilitiesSlice = createSlice({
       state.data = [];
       state.totalLoaded = 0;
       state.loadingProgress = 0;
+      state.downloadProgress = 0;
+    },
+    downloadProgressUpdated(state, action: PayloadAction<number>) {
+      state.downloadProgress = action.payload;
     },
     batchReceived(state, action: PayloadAction<Vulnerability[]>) {
       state.data.push(...action.payload);
@@ -99,6 +105,7 @@ export const {
   loadingStarted,
   batchReceived,
   progressUpdated,
+  downloadProgressUpdated,
   loadingCompleted,
   loadingFailed,
   filterModeSet,

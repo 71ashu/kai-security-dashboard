@@ -5,6 +5,7 @@ import {
   loadingStarted,
   batchReceived,
   progressUpdated,
+  downloadProgressUpdated,
   loadingCompleted,
   loadingFailed,
 } from '../../store/vulnerabilitiesSlice';
@@ -18,6 +19,7 @@ export function DataLoader() {
   const isLoading = useAppSelector((s) => s.vulnerabilities.isLoading);
   const totalLoaded = useAppSelector((s) => s.vulnerabilities.totalLoaded);
   const progress = useAppSelector((s) => s.vulnerabilities.loadingProgress);
+  const downloadProgress = useAppSelector((s) => s.vulnerabilities.downloadProgress);
   const workerRef = useRef<Worker | null>(null);
 
   useEffect(() => {
@@ -38,7 +40,11 @@ export function DataLoader() {
           dispatch(batchReceived(msg.payload));
           break;
         case 'PROGRESS':
-          dispatch(progressUpdated(msg.loaded));
+          if (msg.downloadPercent !== undefined) {
+            dispatch(downloadProgressUpdated(msg.downloadPercent));
+          } else {
+            dispatch(progressUpdated(msg.loaded));
+          }
           break;
         case 'DONE':
           dispatch(loadingCompleted(msg.total));
@@ -66,6 +72,10 @@ export function DataLoader() {
 
   if (!isLoading) return null;
 
+  const isParsing = totalLoaded === 0 && downloadProgress >= 100;
+  const isDownloading = totalLoaded === 0 && downloadProgress < 100;
+  const barPercent = isDownloading ? downloadProgress : progress;
+
   return (
     <div className="fixed inset-0 bg-gray-50 dark:bg-gray-950 flex flex-col items-center justify-center z-50">
       <div className="w-full max-w-md px-8 space-y-6">
@@ -74,20 +84,37 @@ export function DataLoader() {
             KAI <span className="text-red-600 dark:text-red-500">Security</span>
           </div>
           <p className="text-gray-600 text-sm dark:text-gray-400">
-            Loading vulnerability dataset...
+            {isDownloading
+              ? 'Downloading vulnerability dataset...'
+              : isParsing
+              ? 'Parsing dataset...'
+              : 'Loading vulnerability dataset...'}
           </p>
         </div>
 
         <div className="space-y-2">
           <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden dark:bg-gray-800">
-            <div
-              className="h-2 rounded-full bg-red-600 dark:bg-red-500 transition-all duration-300 ease-out"
-              style={{ width: `${progress}%` }}
-            />
+            {isParsing ? (
+              // Indeterminate sweep bar — JSON.parse is sync so we can't report real progress
+              <div className="h-2 w-full relative overflow-hidden rounded-full bg-red-200 dark:bg-red-900">
+                <div className="absolute inset-y-0 w-1/3 bg-red-600 dark:bg-red-500 rounded-full animate-[indeterminate_1.4s_ease-in-out_infinite]" />
+              </div>
+            ) : (
+              <div
+                className="h-2 rounded-full bg-red-600 dark:bg-red-500 transition-all duration-300 ease-out"
+                style={{ width: `${barPercent}%` }}
+              />
+            )}
           </div>
           <div className="flex justify-between text-xs text-gray-500 dark:text-gray-500">
-            <span>{totalLoaded.toLocaleString()} vulnerabilities loaded</span>
-            <span>{progress}%</span>
+            <span>
+              {isDownloading
+                ? 'Downloading...'
+                : isParsing
+                ? 'Parsing...'
+                : `${totalLoaded.toLocaleString()} vulnerabilities loaded`}
+            </span>
+            <span>{isParsing ? '—' : `${barPercent}%`}</span>
           </div>
         </div>
 
