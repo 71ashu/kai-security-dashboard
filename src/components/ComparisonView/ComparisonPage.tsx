@@ -1,8 +1,7 @@
 // src/components/ComparisonView/ComparisonPage.tsx
 import { Link } from 'react-router-dom';
 import { ErrorBoundary } from '../ErrorBoundary';
-import { PreferencesMenu } from '../PreferencesMenu';
-import { ThemeToggle } from '../ThemeToggle/ThemeToggle';
+import { AppHeader } from '../Layout';
 import { ComparisonTable } from './ComparisonTable';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { selectCompareVulnerabilities } from '../../store/selectors';
@@ -15,23 +14,11 @@ export function ComparisonPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 overflow-x-hidden dark:bg-gray-950 dark:text-white">
-      <header className="max-w-screen-2xl mx-auto w-full min-w-0 border-b border-gray-200 px-4 sm:px-8 py-4 flex items-center justify-between gap-3 sticky top-0 bg-gray-50/95 backdrop-blur-sm z-10 dark:border-gray-800 dark:bg-gray-950/95">
-        <div className="flex items-center gap-3 min-w-0 flex-wrap">
-          <Link
-            to="/"
-            className="text-gray-600 hover:text-gray-900 transition-colors text-sm shrink-0 dark:text-gray-500 dark:hover:text-white"
-          >
-            ← Dashboard
-          </Link>
-          <span className="text-gray-400 text-sm shrink-0 dark:text-gray-600">|</span>
-          <span className="text-xl font-bold tracking-tight">
-            KAI <span className="text-red-600 dark:text-red-500">Security</span>
-          </span>
-          <span className="text-gray-400 text-sm hidden sm:inline dark:text-gray-600">|</span>
-          <span className="text-gray-600 text-sm dark:text-gray-400">Compare vulnerabilities</span>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          {compareIds.length > 0 && (
+      <AppHeader
+        backLink={{ to: '/', label: '← Dashboard' }}
+        subtitle="Compare vulnerabilities"
+        actions={
+          compareIds.length > 0 && (
             <button
               type="button"
               onClick={() => dispatch(compareSelectionCleared())}
@@ -41,11 +28,9 @@ export function ComparisonPage() {
             >
               Clear selection
             </button>
-          )}
-          <ThemeToggle />
-          <PreferencesMenu />
-        </div>
-      </header>
+          )
+        }
+      />
 
       <ErrorBoundary>
         <main className="w-full max-w-screen-2xl mx-auto min-w-0 px-4 sm:px-8 py-6 box-border">
