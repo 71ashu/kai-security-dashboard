@@ -72,6 +72,8 @@ export function DataLoader() {
 
   if (!isLoading) return null;
 
+  // With streaming, download and parse overlap — this only triggers if the download
+  // finishes before the first image object has been fully parsed (very large images).
   const isParsing = totalLoaded === 0 && downloadProgress >= 100;
   const isDownloading = totalLoaded === 0 && downloadProgress < 100;
   const barPercent = isDownloading ? downloadProgress : progress;
@@ -85,9 +87,9 @@ export function DataLoader() {
           </div>
           <p className="text-gray-600 text-sm dark:text-gray-400">
             {isDownloading
-              ? 'Downloading vulnerability dataset...'
+              ? 'Downloading & parsing vulnerability dataset...'
               : isParsing
-              ? 'Parsing dataset...'
+              ? 'Finalizing dataset...'
               : 'Loading vulnerability dataset...'}
           </p>
         </div>
@@ -95,7 +97,7 @@ export function DataLoader() {
         <div className="space-y-2">
           <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden dark:bg-gray-800">
             {isParsing ? (
-              // Indeterminate sweep bar — JSON.parse is sync so we can't report real progress
+              // Indeterminate bar — fallback for when download finishes before first batch
               <div className="h-2 w-full relative overflow-hidden rounded-full bg-red-200 dark:bg-red-900">
                 <div className="absolute inset-y-0 w-1/3 bg-red-600 dark:bg-red-500 rounded-full animate-[indeterminate_1.4s_ease-in-out_infinite]" />
               </div>
@@ -111,7 +113,7 @@ export function DataLoader() {
               {isDownloading
                 ? 'Downloading...'
                 : isParsing
-                ? 'Parsing...'
+                ? 'Finalizing...'
                 : `${totalLoaded.toLocaleString()} vulnerabilities loaded`}
             </span>
             <span>{isParsing ? '—' : `${barPercent}%`}</span>

@@ -1,5 +1,6 @@
 // src/workers/dataLoader.worker.ts
-import type { RawGroup, RawImage, RawVulnerability, Vulnerability, WorkerMessage } from '../types/vulnerability';
+import { JSONParser } from '@streamparser/json';
+import type { RawImage, RawVulnerability, Vulnerability, WorkerMessage } from '../types/vulnerability';
 
 const BATCH_SIZE = 500;
 
@@ -27,85 +28,90 @@ self.onmessage = async (e: MessageEvent<{ url: string }>) => {
     const response = await fetch(url);
 
     if (!response.ok) {
-      const msg: WorkerMessage = { type: 'ERROR', message: `HTTP ${response.status}` };
-      self.postMessage(msg);
+      self.postMessage({ type: 'ERROR', message: `HTTP ${response.status}` } as WorkerMessage);
       return;
     }
 
     const contentLength = Number(response.headers.get('Content-Length') ?? '0');
     const reader = response.body!.getReader();
-    const chunks: Uint8Array[] = [];
+    const decoder = new TextDecoder();
+
     let bytesReceived = 0;
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      chunks.push(value);
-      bytesReceived += value.byteLength;
-      if (contentLength > 0) {
-        const downloadProgress: WorkerMessage = {
-          type: 'PROGRESS',
-          loaded: 0,
-          downloadPercent: Math.round((bytesReceived / contentLength) * 100),
-        };
-        self.postMessage(downloadProgress);
-      }
-    }
-
-    const merged = new Uint8Array(bytesReceived);
-    let offset = 0;
-    for (const chunk of chunks) {
-      merged.set(chunk, offset);
-      offset += chunk.byteLength;
-    }
-    const text = new TextDecoder().decode(merged);
-    const data = JSON.parse(text) as { groups: Record<string, RawGroup> };
-
     let batch: Vulnerability[] = [];
     let totalLoaded = 0;
 
-    for (const groupKey of Object.keys(data.groups)) {
-      const group = data.groups[groupKey];
-      const groupName = group.name;
+    // Context state — updated as the parser walks group → repo → image
+    let currentGroup: string | null = null;
+    let currentRepo: string | null = null;
 
-      for (const repoKey of Object.keys(group.repos)) {
-        const repo = group.repos[repoKey];
-        const repoName = repo.name;
+    const parser = new JSONParser({
+      paths: [
+        '$.groups.*.name',            // group display names
+        '$.groups.*.repos.*.name',    // repo display names
+        '$.groups.*.repos.*.images.*' // full image objects (buffered individually)
+      ],
+      // keepStack defaults to true — required so we can inspect ancestry in onValue
+    });
 
-        for (const imageKey of Object.keys(repo.images)) {
-          const image = repo.images[imageKey];
+    parser.onValue = ({ value, key, stack }) => {
+      if (key === 'name' && typeof value === 'string') {
+        // Distinguish group name from repo name by whether 'repos' appears in ancestry.
+        // Avoids fragile depth magic-numbers; works regardless of stack.length.
+        const insideRepos = stack.some((s) => s.key === 'repos');
+        if (insideRepos) {
+          currentRepo = value;
+        } else {
+          currentGroup = value;
+          currentRepo = null; // reset repo context when entering a new group
+        }
+        return;
+      }
 
-          for (const raw of image.vulnerabilities ?? []) {
-            batch.push(transformVulnerability(raw, groupName, repoName, image));
-            totalLoaded++;
+      // Image object — emitted once the full image has been parsed off the stream
+      if (!currentGroup || !currentRepo) return;
+      const image = value as unknown as RawImage;
 
-            if (batch.length >= BATCH_SIZE) {
-              const batchMsg: WorkerMessage = { type: 'BATCH', payload: batch };
-              self.postMessage(batchMsg);
-              batch = [];
+      for (const raw of image.vulnerabilities ?? []) {
+        batch.push(transformVulnerability(raw as RawVulnerability, currentGroup, currentRepo, image));
+        totalLoaded++;
 
-              const progressMsg: WorkerMessage = { type: 'PROGRESS', loaded: totalLoaded };
-              self.postMessage(progressMsg);
-            }
-          }
+        if (batch.length >= BATCH_SIZE) {
+          self.postMessage({ type: 'BATCH', payload: batch } as WorkerMessage);
+          batch = [];
+          self.postMessage({ type: 'PROGRESS', loaded: totalLoaded } as WorkerMessage);
         }
       }
+    };
+
+    // Feed chunks to the parser as they arrive, reporting download progress in parallel
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      bytesReceived += value.byteLength;
+      if (contentLength > 0) {
+        self.postMessage({
+          type: 'PROGRESS',
+          loaded: totalLoaded,
+          downloadPercent: Math.round((bytesReceived / contentLength) * 100),
+        } as WorkerMessage);
+      }
+
+      parser.write(decoder.decode(value, { stream: true }));
     }
 
+    // Flush last partial batch
     if (batch.length > 0) {
-      const batchMsg: WorkerMessage = { type: 'BATCH', payload: batch };
-      self.postMessage(batchMsg);
+      self.postMessage({ type: 'BATCH', payload: batch } as WorkerMessage);
     }
 
-    const doneMsg: WorkerMessage = { type: 'DONE', total: totalLoaded };
-    self.postMessage(doneMsg);
+    self.postMessage({ type: 'DONE', total: totalLoaded } as WorkerMessage);
 
   } catch (err) {
     console.error('[Worker] Error:', err);
-    const errorMsg: WorkerMessage = {
+    self.postMessage({
       type: 'ERROR',
       message: err instanceof Error ? err.message : 'Unknown error',
-    };
-    self.postMessage(errorMsg);
+    } as WorkerMessage);
   }
 };
