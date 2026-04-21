@@ -29,7 +29,7 @@ The KAI Security Vulnerability Dashboard is a React application for exploring la
 1. **Clone the repository**
 
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/71ashu/kai-security-dashboard.git
    cd kai-security-dashboard
    ```
 
