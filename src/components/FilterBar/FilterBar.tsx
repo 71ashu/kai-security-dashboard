@@ -21,7 +21,7 @@ import {
   selectFilterImpact,
   selectFilteredCount,
 } from '../../store/selectors';
-import { buildSearchSuggestions } from '../../utils';
+import { buildSearchIndex, buildSearchSuggestions } from '../../utils';
 import type { Severity } from '../../types';
 
 const SEVERITIES: Severity[] = ['critical', 'high', 'medium', 'low'];
@@ -44,6 +44,18 @@ const KIND_LABEL: Record<string, string> = {
   package: 'Package',
   group: 'Group',
   repo: 'Repository',
+  'kai-status': 'KAI Status',
+  'fix-status': 'Fix Status',
+  cvss: 'CVSS',
+};
+
+const KIND_BADGE_CLASS: Record<string, string> = {
+  'kai-status':
+    'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+  'fix-status':
+    'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
+  cvss:
+    'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300',
 };
 
 export function FilterBar() {
@@ -72,12 +84,25 @@ export function FilterBar() {
     };
   }, []);
 
+  const searchIndex = useMemo(
+    () => buildSearchIndex(allVulnerabilities),
+    [allVulnerabilities]
+  );
+
   const deferredSearch = useDeferredValue(localSearch);
+  const isSuggestionsPending = deferredSearch !== localSearch;
 
   const suggestions = useMemo(
-    () => buildSearchSuggestions(allVulnerabilities, deferredSearch),
-    [allVulnerabilities, deferredSearch]
+    () => buildSearchSuggestions(searchIndex, deferredSearch),
+    [searchIndex, deferredSearch]
   );
+
+  // Track the last settled suggestion count so we only hold the panel open
+  // during a pending update when there were already results visible.
+  const lastSettledCountRef = useRef(0);
+  if (!isSuggestionsPending) {
+    lastSettledCountRef.current = suggestions.length;
+  }
 
   useEffect(() => {
     setHighlightIndex(-1);
@@ -92,6 +117,7 @@ export function FilterBar() {
 
   const handleSearchInputChange = useCallback((val: string) => {
     setLocalSearch(val);
+    setSuggestionsOpen(true);
   }, []);
 
   const submitSearch = useCallback(() => {
@@ -181,7 +207,11 @@ export function FilterBar() {
     filterMode !== 'none' || severityFilter.length > 0 || searchQuery !== '';
 
   const showSuggestionsPanel =
-    suggestionsOpen && suggestions.length > 0 && allVulnerabilities.length > 0;
+    suggestionsOpen &&
+    allVulnerabilities.length > 0 &&
+    localSearch.trim().length >= 2 &&
+    (suggestions.length > 0 ||
+      (isSuggestionsPending && lastSettledCountRef.current > 0));
 
   useLayoutEffect(() => {
     if (!showSuggestionsPanel || highlightIndex < 0) return;
@@ -255,8 +285,8 @@ export function FilterBar() {
                     onMouseEnter={() => setHighlightIndex(index)}
                   >
                     <span
-                      className="shrink-0 mt-0.5 rounded px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide
-                                 bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+                      className={`shrink-0 mt-0.5 rounded px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide
+                                 ${KIND_BADGE_CLASS[s.kind] ?? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'}`}
                     >
                       {KIND_LABEL[s.kind] ?? s.kind}
                     </span>

@@ -103,6 +103,12 @@ const selectSeverityFiltered = createSelector(
   }
 );
 
+// Display labels for kaiStatus raw values (mirrors VulnerabilityField rendering)
+const KAI_STATUS_LABELS: Record<string, string> = {
+  'invalid - norisk': 'manual clear',
+  'ai-invalid-norisk': 'ai clear',
+};
+
 // Step 3: apply search query
 const selectSearchFiltered = createSelector(
   selectSeverityFiltered,
@@ -110,14 +116,21 @@ const selectSearchFiltered = createSelector(
   (data, searchQuery) => {
     const query = searchQuery.trim().toLowerCase();
     if (!query) return data;
-    return data.filter(
-      (v) =>
+    return data.filter((v) => {
+      const kaiLabel = v.kaiStatus ? (KAI_STATUS_LABELS[v.kaiStatus] ?? v.kaiStatus.toLowerCase()) : '';
+      const cvssStr = v.cvss != null ? v.cvss.toFixed(1) : '';
+      return (
         v.cve.toLowerCase().includes(query) ||
         v.packageName.toLowerCase().includes(query) ||
         v.description.toLowerCase().includes(query) ||
         v.groupName.toLowerCase().includes(query) ||
-        v.repoName.toLowerCase().includes(query)
-    );
+        v.repoName.toLowerCase().includes(query) ||
+        kaiLabel.includes(query) ||
+        (v.kaiStatus?.toLowerCase() ?? '').includes(query) ||
+        (v.status?.toLowerCase() ?? '').includes(query) ||
+        cvssStr.includes(query)
+      );
+    });
   }
 );
 
