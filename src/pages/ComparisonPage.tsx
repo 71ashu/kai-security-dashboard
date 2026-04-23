@@ -4,7 +4,7 @@ import { AppHeader } from '../components/Layout';
 import { ComparisonTable } from '../components/ComparisonView';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { selectCompareVulnerabilities } from '../store/selectors';
-import { compareSelectionCleared } from '../store/comparisonSlice';
+import { compareSelectionCleared, MAX_COMPARE_SELECTION } from '../store/comparisonSlice';
 
 export function ComparisonPage() {
   const dispatch = useAppDispatch();
@@ -36,7 +36,7 @@ export function ComparisonPage() {
           {compareIds.length === 0 ? (
             <div className="rounded-xl border border-gray-200 bg-white p-8 text-center space-y-3 dark:border-gray-800 dark:bg-gray-900">
               <p className="text-gray-600 dark:text-gray-400">
-                Select up to 5 vulnerabilities from the table to compare them side by side.
+                Select up to {MAX_COMPARE_SELECTION} vulnerabilities from the table to compare them side by side.
               </p>
               <Link to="/" className="inline-block text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">
                 Back to dashboard
