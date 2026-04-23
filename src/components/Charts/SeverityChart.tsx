@@ -11,6 +11,7 @@ import {
 import { useAppSelector } from '../../store/hooks';
 import { selectSeverityDistribution } from '../../store/selectors';
 import { useEffectiveThemeIsDark, chartLegendTextColor, chartTooltipContentStyle } from '../../theme';
+import { capitalize } from '../../utils';
 
 const SEVERITY_COLORS: Record<string, string> = {
   critical: '#ef4444',
@@ -74,13 +75,13 @@ export function SeverityChart() {
             contentStyle={chartTooltipContentStyle(isDark)}
             formatter={(value, name) => [
               Number(value ?? 0).toLocaleString(),
-              String(name ?? '').charAt(0).toUpperCase() + String(name ?? '').slice(1),
+              capitalize(String(name ?? '')),
             ]}
           />
           <Legend
             formatter={(value) => (
               <span style={{ color: chartLegendTextColor(isDark), fontSize: 12 }}>
-                {value.charAt(0).toUpperCase() + value.slice(1)}
+                {capitalize(value)}
               </span>
             )}
           />

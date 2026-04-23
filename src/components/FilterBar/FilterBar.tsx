@@ -21,7 +21,7 @@ import {
   selectFilterImpact,
   selectFilteredCount,
 } from '../../store/selectors';
-import { buildSearchIndex, buildSearchSuggestions } from '../../utils';
+import { buildSearchIndex, buildSearchSuggestions, capitalize } from '../../utils';
 import type { Severity } from '../../types';
 
 const SEVERITIES: Severity[] = ['critical', 'high', 'medium', 'low'];
@@ -351,7 +351,7 @@ export function FilterBar() {
                   : 'opacity-70'
                 }`}
             >
-              {sev.charAt(0).toUpperCase() + sev.slice(1)}
+              {capitalize(sev)}
             </button>
           ))}
         </div>
