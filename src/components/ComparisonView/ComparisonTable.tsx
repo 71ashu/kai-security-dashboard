@@ -2,10 +2,8 @@
 import type { CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import type { Vulnerability } from '../../types';
-
-function detailPath(v: Vulnerability): string {
-  return `/vulnerability/${encodeURIComponent(v.id)}`;
-}
+import { vulnerabilityPath } from '../../utils/routes';
+import { KAI_STATUS_LABEL } from '../../constants';
 
 type RowDef = {
   label: string;
@@ -20,15 +18,7 @@ const ROWS: RowDef[] = [
   { label: 'Repo', get: (v) => v.repoName },
   { label: 'Image', get: (v) => `${v.imageName}:${v.imageVersion}` },
   { label: 'Published', get: (v) => v.published?.slice(0, 10) ?? '—' },
-  {
-    label: 'KAI Status',
-    get: (v) =>
-      v.kaiStatus === 'invalid - norisk'
-        ? 'Manual Clear'
-        : v.kaiStatus === 'ai-invalid-norisk'
-          ? 'AI Clear'
-          : '—',
-  },
+  { label: 'KAI Status', get: (v) => KAI_STATUS_LABEL[v.kaiStatus ?? ''] ?? '—' },
   { label: 'Fix status', get: (v) => v.status || '—' },
 ];
 
@@ -82,7 +72,7 @@ export function ComparisonTable({ items }: Props) {
                   max-md:w-[11rem] max-md:min-w-[11rem] max-md:max-w-[11rem]
                   min-w-0"
               >
-                <Link to={detailPath(v)} className={headerLinkClass}>
+                <Link to={vulnerabilityPath(v)} className={headerLinkClass}>
                   {v.cve}
                 </Link>
               </th>
@@ -108,7 +98,7 @@ export function ComparisonTable({ items }: Props) {
                     max-md:w-[11rem] max-md:min-w-[11rem] max-md:max-w-[11rem]
                     md:min-w-0 md:max-w-0"
                 >
-                  <Link to={detailPath(v)} className={valueLinkClass}>
+                  <Link to={vulnerabilityPath(v)} className={valueLinkClass}>
                     {row.get(v)}
                   </Link>
                 </td>

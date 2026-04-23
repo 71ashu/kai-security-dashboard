@@ -2,6 +2,7 @@
 import { createSelector } from '@reduxjs/toolkit';
 import type { RootState } from './index.ts';
 import type { Vulnerability } from '../types';
+import { KAI_STATUS_LABEL } from '../constants';
 
 const selectComparisonIds = (state: RootState) => state.comparison.ids;
 
@@ -103,12 +104,6 @@ const selectSeverityFiltered = createSelector(
   }
 );
 
-// Display labels for kaiStatus raw values (mirrors VulnerabilityField rendering)
-const KAI_STATUS_LABELS: Record<string, string> = {
-  'invalid - norisk': 'manual clear',
-  'ai-invalid-norisk': 'ai clear',
-};
-
 // Step 3: apply search query
 const selectSearchFiltered = createSelector(
   selectSeverityFiltered,
@@ -117,7 +112,7 @@ const selectSearchFiltered = createSelector(
     const query = searchQuery.trim().toLowerCase();
     if (!query) return data;
     return data.filter((v) => {
-      const kaiLabel = v.kaiStatus ? (KAI_STATUS_LABELS[v.kaiStatus] ?? v.kaiStatus.toLowerCase()) : '';
+      const kaiLabel = v.kaiStatus ? (KAI_STATUS_LABEL[v.kaiStatus]?.toLowerCase() ?? v.kaiStatus.toLowerCase()) : '';
       const cvssStr = v.cvss != null ? v.cvss.toFixed(1) : '';
       return (
         v.cve.toLowerCase().includes(query) ||

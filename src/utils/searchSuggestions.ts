@@ -1,5 +1,6 @@
 // src/utils/searchSuggestions.ts
 import type { Vulnerability } from '../types';
+import { KAI_STATUS_LABEL } from '../constants';
 
 export type SearchSuggestionKind = 'cve' | 'package' | 'group' | 'repo' | 'kai-status' | 'fix-status' | 'cvss';
 
@@ -24,10 +25,9 @@ export interface SearchIndex {
   cvssScores: string[];
 }
 
-/** Display labels for kaiStatus raw values — mirrors VulnerabilityField and selectors. */
 const KAI_STATUS_OPTIONS: { label: string; description: string }[] = [
-  { label: 'Manual Clear', description: 'Manually marked as no risk' },
-  { label: 'AI Clear', description: 'AI-assessed as no risk' },
+  { label: KAI_STATUS_LABEL['invalid - norisk'], description: 'Manually marked as no risk' },
+  { label: KAI_STATUS_LABEL['ai-invalid-norisk'], description: 'AI-assessed as no risk' },
 ];
 
 const DEFAULT_MAX = 10;
