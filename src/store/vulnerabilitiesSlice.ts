@@ -2,6 +2,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { Vulnerability, FilterState, FilterMode, Severity } from '../types';
+import { DATASET_VULN_TOTAL } from '../constants';
 
 interface VulnerabilitiesState {
   data: Vulnerability[];
@@ -51,9 +52,8 @@ const vulnerabilitiesSlice = createSlice({
     },
     progressUpdated(state, action: PayloadAction<number>) {
       state.totalLoaded = action.payload;
-      // 236656 is the known total from our analysis
       state.loadingProgress = Math.min(
-        Math.round((action.payload / 236656) * 100),
+        Math.round((action.payload / DATASET_VULN_TOTAL) * 100),
         99
       );
     },

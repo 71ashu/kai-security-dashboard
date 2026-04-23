@@ -1,7 +1,6 @@
 import { useAppSelector } from '../../store/hooks';
 import { selectFilterImpact, selectFilteredCount } from '../../store/selectors';
-
-const TOTAL = 236656;
+import { DATASET_VULN_TOTAL } from '../../constants';
 
 interface MetricCardProps {
   label: string;
@@ -29,13 +28,13 @@ function MetricCard({ label, value, sub, accent }: MetricCardProps) {
 export function MetricsSummary() {
   const filteredCount = useAppSelector(selectFilteredCount);
   const { analysisCount, aiAnalysisCount } = useAppSelector(selectFilterImpact);
-  const removedCount = TOTAL - filteredCount;
+  const removedCount = DATASET_VULN_TOTAL - filteredCount;
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <MetricCard
         label="Total CVEs"
-        value={TOTAL}
+        value={DATASET_VULN_TOTAL}
         sub="in dataset"
       />
       <MetricCard
