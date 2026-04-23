@@ -11,7 +11,7 @@ import {
 } from 'recharts';
 import { useAppSelector } from '../../store/hooks';
 import { selectRiskFactorFrequency } from '../../store/selectors';
-import { useEffectiveThemeIsDark, chartAxisTickMuted, chartAxisTickSecondary, chartTooltipContentStyleAlt } from '../../theme';
+import { useEffectiveThemeIsDark, chartAxisTickMuted, chartAxisTickSecondary, chartTooltipContentStyle } from '../../theme';
 
 /** Base / hover (darker) fills by bar rank */
 function barFills(index: number, isHovered: boolean): string {
@@ -57,7 +57,7 @@ export function RiskFactorChart() {
             />
             <Tooltip
                 cursor={false}
-                contentStyle={chartTooltipContentStyleAlt(isDark)}
+                contentStyle={chartTooltipContentStyle(isDark, 'alt')}
                 labelStyle={{
                   color: isDark ? '#f9fafb' : '#111827',
                   fontWeight: 600,
