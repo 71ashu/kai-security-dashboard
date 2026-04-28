@@ -252,7 +252,7 @@ export function FilterBar() {
                 setSuggestionsOpen(true);
               }}
               onBlur={scheduleBlurClose}
-              placeholder="Search by CVE ID, package, description..."
+              placeholder="Search by CVE ID, package, group, repo…"
               autoComplete="off"
               className="w-full bg-gray-50 border border-gray-300 rounded-lg pl-9 pr-4 py-2.5
                          text-sm text-gray-900 placeholder-gray-500
