@@ -1,3 +1,4 @@
-export { RiskFactorChart } from './RiskFactorChart';
-export { SeverityChart } from './SeverityChart';
-export { TrendChart } from './TrendChart';
+export { RiskFactorChart }        from './RiskFactorChart';
+export { SeverityChart }          from './SeverityChart';
+export { TrendChart }             from './TrendChart';
+export { AnalysisBreakdownChart } from './AnalysisBreakdownChart';

@@ -231,3 +231,33 @@ export const selectCompareVulnerabilities = createSelector(
     return ids.map((id) => map.get(id)).filter((v): v is Vulnerability => v != null);
   }
 );
+
+// Drives the AnalysisBreakdownChart
+export const selectAnalysisBreakdown = createSelector(
+  selectAllVulnerabilities,
+  (data) => {
+    let manual = 0;
+    let ai = 0;
+    let unreviewed = 0;
+    for (const v of data) {
+      if (v.kaiStatus === 'invalid - norisk') manual++;
+      else if (v.kaiStatus === 'ai-invalid-norisk') ai++;
+      else unreviewed++;
+    }
+    return [
+      { name: 'Unreviewed', value: unreviewed, color: '#6b7280' },
+      { name: 'Manual Cleared', value: manual,  color: '#2563eb' },
+      { name: 'AI Cleared',     value: ai,      color: '#7c3aed' },
+    ];
+  }
+);
+
+// Drives the TopCriticalCard — top 5 unreviewed critical CVEs after filters
+export const selectTopCritical = createSelector(
+  selectFilteredList,
+  (data) =>
+    data
+      .filter((v) => v.severity === 'critical' && !v.kaiStatus)
+      .sort((a, b) => (b.cvss ?? 0) - (a.cvss ?? 0))
+      .slice(0, 5)
+);

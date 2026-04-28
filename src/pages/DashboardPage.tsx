@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { AppHeader } from '../components/Layout';
 import { MetricsSummary } from '../components/MetricsSummary';
-import { RiskFactorChart, SeverityChart, TrendChart } from '../components/Charts';
+import { RiskFactorChart, SeverityChart, TrendChart, AnalysisBreakdownChart } from '../components/Charts';
+import { TopCriticalCard } from '../components/TopCriticalCard';
 import { FilterBar } from '../components/FilterBar';
 import { VulnerabilityTable } from '../components/VulnerabilityTable';
 import { useAppSelector } from '../store/hooks';
@@ -57,11 +58,16 @@ export function DashboardPage() {
 
           <MetricsSummary />
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Charts row — 4 columns on xl, 2 on lg, 1 on mobile */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
             <SeverityChart />
+            <AnalysisBreakdownChart />
             <RiskFactorChart />
             <TrendChart />
           </div>
+
+          {/* Top critical card — full width below charts */}
+          <TopCriticalCard />
 
           <FilterBar />
 
